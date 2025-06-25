@@ -29,88 +29,88 @@ if autenticado:
     # Carregar e mostrar o DataFrame
     if arquivo_selecionado:
         df = carregar_df(arquivo_selecionado)
+        st.success(f"✅ Arquivo carregado: {arquivo_selecionado}")
     
-        st.markdown("### 🔎 Filtros por Nacionalidade / Naturalidade")
+        if 'Naturalidade' in df.columns and 'País de nacionalidade' in df.columns:
+            st.markdown("### 🔎 Filtros por Nacionalidade / Naturalidade")
     
-        # Lista de países sul-americanos
-        paises_sulamericanos = [
-            'Brazil', 'Argentina', 'Uruguay', 'Colombia', 'Chile',
-            'Paraguay', 'Peru', 'Ecuador', 'Bolivia', 'Venezuela'
-        ]
+            # Lista de países sul-americanos
+            paises_sulamericanos = [
+                'Brazil', 'Argentina', 'Uruguay', 'Colombia', 'Chile',
+                'Paraguay', 'Peru', 'Ecuador', 'Bolivia', 'Venezuela'
+            ]
     
-        # Opções de filtro personalizadas
-        opcoes_personalizadas = ["Todos", "Apenas Sul-Americanos", "Sul-Americanos + Portugueses"]
+            # Opções de filtro personalizadas
+            opcoes_personalizadas = ["Todos", "Apenas Sul-Americanos", "Sul-Americanos + Portugueses"]
     
-        # Coleta de países únicos
-        todos_paises_nacionalidade = set()
-        if 'País de nacionalidade' in df.columns:
+            # Coleta de países únicos
+            todos_paises_nacionalidade = set()
             for val in df['País de nacionalidade'].dropna():
                 for pais in str(val).split(','):
                     todos_paises_nacionalidade.add(pais.strip())
     
-        if 'Naturalidade' in df.columns:
             todos_paises_nacionalidade.update(df['Naturalidade'].dropna().unique())
     
-        opcoes_filtro = opcoes_personalizadas + sorted(todos_paises_nacionalidade)
-        pais_filtro = st.selectbox("Filtrar jogadores por país de nacionalidade ou naturalidade:", opcoes_filtro)
+            opcoes_filtro = opcoes_personalizadas + sorted(todos_paises_nacionalidade)
+            pais_filtro = st.selectbox("Filtrar jogadores por país de nacionalidade ou naturalidade:", opcoes_filtro)
     
-        # Aplicar filtro
-        if pais_filtro == "Apenas Sul-Americanos":
-            df = df[
-                df['Naturalidade'].isin(paises_sulamericanos) |
-                df['País de nacionalidade'].fillna('').apply(lambda x: any(pais in x for pais in paises_sulamericanos))
-            ]
+            # Aplicar filtro
+            if pais_filtro == "Apenas Sul-Americanos":
+                df = df[
+                    df['Naturalidade'].isin(paises_sulamericanos) |
+                    df['País de nacionalidade'].fillna('').apply(lambda x: any(pais in x for pais in paises_sulamericanos))
+                ]
     
-        elif pais_filtro == "Sul-Americanos + Portugueses":
-            paises_alvo = paises_sulamericanos + ['Portugal']
-            df = df[
-                df['Naturalidade'].isin(paises_alvo) |
-                df['País de nacionalidade'].fillna('').apply(lambda x: any(pais in x for pais in paises_alvo))
-            ]
+            elif pais_filtro == "Sul-Americanos + Portugueses":
+                paises_alvo = paises_sulamericanos + ['Portugal']
+                df = df[
+                    df['Naturalidade'].isin(paises_alvo) |
+                    df['País de nacionalidade'].fillna('').apply(lambda x: any(pais in x for pais in paises_alvo))
+                ]
     
-        elif pais_filtro != "Todos":
-            df = df[
-                df['Naturalidade'] == pais_filtro |
-                df['País de nacionalidade'].fillna('').str.contains(pais_filtro, na=False)
-            ]
+            elif pais_filtro != "Todos":
+                df = df[
+                    df['Naturalidade'] == pais_filtro |
+                    df['País de nacionalidade'].fillna('').str.contains(pais_filtro, na=False)
+                ]
     
-        # Padronizar coluna de equipe
-        if 'Equipa dentro de um período de tempo seleccionado' in df.columns:
-            df['Equipa'] = df['Equipa dentro de um período de tempo seleccionado']
-            df.drop(columns=['Equipa dentro de um período de tempo seleccionado'], inplace=True)
+            # Padronizar coluna de equipe
+            if 'Equipa dentro de um período de tempo seleccionado' in df.columns:
+                df['Equipa'] = df['Equipa dentro de um período de tempo seleccionado']
+                df.drop(columns=['Equipa dentro de um período de tempo seleccionado'], inplace=True)
     
-        # Ajustar a posição principal e aplicar substituições padronizadas
-        coluna_posicao_original = 'Pos.' if 'Pos.' in df.columns else 'Posição'
-        df['Posição'] = (
-            df[coluna_posicao_original]
-            .astype(str)
-            .str.split(',', n=1).str[0]
-            .replace({
-                'RMAF': 'RW',
-                'LMAF': 'LW',
-                'LAMF': 'AMF',
-                'RAMF': 'AMF',
-                'RDMF': 'DMF',
-                'LDMF': 'DMF',
-                'RCMF': 'CMF',
-                'LCMF': 'CMF',
-                'LWB': 'LB',
-                'RWB': 'RB',
-                'LWF': 'LW',
-                'RWF': 'RW'
-            })
-        )
-    
-        # Filtros adicionais
-        if 'Equipa' in df.columns:
-            equipe_selecionada = st.selectbox("Filtrar por equipe (opcional):", ['Todas'] + sorted(df['Equipa'].unique()))
-            if equipe_selecionada != 'Todas':
-                df = df[df['Equipa'] == equipe_selecionada]
-    
-        posicoes_disponiveis = sorted(df['Posição'].dropna().unique())
-        posicao_filtro = st.selectbox("Filtrar por posição (opcional):", ['Todas'] + posicoes_disponiveis)
-        if posicao_filtro != 'Todas':
-            df = df[df['Posição'] == posicao_filtro]
+            # Ajustar a posição principal e aplicar substituições padronizadas
+            coluna_posicao_original = 'Pos.' if 'Pos.' in df.columns else 'Posição'
+            df['Posição'] = (
+                df[coluna_posicao_original]
+                .astype(str)
+                .str.split(',', n=1).str[0]
+                .replace({
+                    'RMAF': 'RW',
+                    'LMAF': 'LW',
+                    'LAMF': 'AMF',
+                    'RAMF': 'AMF',
+                    'RDMF': 'DMF',
+                    'LDMF': 'DMF',
+                    'RCMF': 'CMF',
+                    'LCMF': 'CMF',
+                    'LWB': 'LB',
+                    'RWB': 'RB',
+                    'LWF': 'LW',
+                    'RWF': 'RW'
+                })
+            )
+        
+            # Filtros adicionais
+            if 'Equipa' in df.columns:
+                equipe_selecionada = st.selectbox("Filtrar por equipe (opcional):", ['Todas'] + sorted(df['Equipa'].unique()))
+                if equipe_selecionada != 'Todas':
+                    df = df[df['Equipa'] == equipe_selecionada]
+        
+            posicoes_disponiveis = sorted(df['Posição'].dropna().unique())
+            posicao_filtro = st.selectbox("Filtrar por posição (opcional):", ['Todas'] + posicoes_disponiveis)
+            if posicao_filtro != 'Todas':
+                df = df[df['Posição'] == posicao_filtro]
     
         # Mostrar tabela final
         st.write(df)
