@@ -1,0 +1,7 @@
+streamlit
+pandas
+openpyxl
+reportlab
+matplotlib
+mplsoccer
+scipy
