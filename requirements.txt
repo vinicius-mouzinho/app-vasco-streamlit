@@ -5,3 +5,4 @@ reportlab
 matplotlib
 mplsoccer
 scipy
+streamlit-authenticator==0.2.2
