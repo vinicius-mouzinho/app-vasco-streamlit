@@ -9,7 +9,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Scout Vasco - App de Análise de Dados", layout="wide")
 
-# === Autenticação ===
+# Autenticação
 autenticador = criar_autenticador()
 nome, autenticado, usuario = autenticador.login('Login', 'main')
 
