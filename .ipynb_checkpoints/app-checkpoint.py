@@ -112,8 +112,8 @@ if autenticado:
             if posicao_filtro != 'Todas':
                 df = df[df['Posição'] == posicao_filtro]
     
-        # Mostrar tabela final
-        st.write(df)
+            # Mostrar tabela final
+            st.write(df)
         
         st.markdown("---")
         st.header("📄 Gerar Relatório Individual")
