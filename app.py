@@ -30,7 +30,7 @@ if autenticado:
     if arquivo_selecionado:
         df = carregar_df(arquivo_selecionado)
         st.success(f"✅ Arquivo carregado: {arquivo_selecionado}")
-    
+        df.columns = df.columns.str.strip()
         if 'Naturalidade' in df.columns and 'País de nacionalidade' in df.columns:
             st.markdown("### 🔎 Filtros por Nacionalidade / Naturalidade")
     
