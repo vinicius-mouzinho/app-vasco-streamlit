@@ -31,7 +31,7 @@ def gerar_relatorio_dados(
     # Limpar a coluna de posição: manter apenas a primeira, se houver múltiplas
     df[coluna_posicao] = df[coluna_posicao].astype(str).apply(lambda x: x.split(",")[0].strip())
     # ✅ Carregar DataFrame da Liga BRA 2025.xlsx para os gráficos comparativos
-    caminho_df_liga = os.path.join("dataframes", "Liga BRA 2024.xlsx")
+    caminho_df_liga = os.path.join("dataframes", "Brasil 2024.xlsx")
     df_liga = pd.read_excel(caminho_df_liga)
     df_liga[coluna_posicao] = df_liga[coluna_posicao].astype(str).apply(lambda x: x.split(",")[0].strip())
     # === Adicionar métricas derivadas ao df_liga ===
