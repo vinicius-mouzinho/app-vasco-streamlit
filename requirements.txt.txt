@@ -1,0 +1,5 @@
+streamlit
+pandas
+matplotlib
+mplsoccer==1.4.0
+openpyxl
