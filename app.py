@@ -30,8 +30,7 @@ if autenticado:
     if arquivo_selecionado:
         df = carregar_df(arquivo_selecionado)
         st.success(f"✅ Arquivo carregado: {arquivo_selecionado}")
-        df.columns = df.columns.str.strip()
-        if 'Naturalidade' in df.columns and 'País de nacionalidade' in df.columns:
+    if 'Naturalidade' in df.columns and 'País de nacionalidade' in df.columns:
             st.markdown("### 🔎 Filtros por Nacionalidade / Naturalidade")
     
             # Lista de países sul-americanos
@@ -112,8 +111,8 @@ if autenticado:
             if posicao_filtro != 'Todas':
                 df = df[df['Posição'] == posicao_filtro]
     
-            # Mostrar tabela final
-            st.write(df)
+        # Mostrar tabela final
+        st.write(df)
         
         st.markdown("---")
         st.header("📄 Gerar Relatório Individual")
