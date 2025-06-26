@@ -32,9 +32,6 @@ if autenticado:
 
     # Carregar e mostrar o DataFrame
     if arquivo_selecionado:
-        df = carregar_df(arquivo_selecionado)
-        st.success(f"✅ Arquivo carregado: {arquivo_selecionado}")
-
         # Verificação de colunas necessárias
         if 'Naturalidade' in df.columns and 'País de nacionalidade' in df.columns:
             st.markdown("### 🔎 Filtros por Nacionalidade / Naturalidade")
