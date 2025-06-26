@@ -161,3 +161,27 @@ if autenticado:
                     )
             else:
                 st.error("❌ O relatório não pôde ser gerado. Verifique os dados disponíveis.")
+
+        # =========================
+        # 📈 Rankings por Perfil de Jogador
+        # =========================
+        from utilitarios.funcoes_metricas import gerar_ranking_zscore
+        
+        st.markdown("---")
+        st.header("📈 Rankings por Perfil de Jogador (Em construção... rankings desajustados ainda")
+        
+        # Perfis disponíveis (mais poderão ser adicionados no futuro)
+        perfil_selecionado = st.selectbox("Escolha um perfil de jogador:", ["Nenhum", "Extremo de força"])
+        
+        if perfil_selecionado != "Nenhum":
+            with st.spinner("Calculando ranking..."):
+                df_ranking = gerar_ranking_zscore(df, perfil_selecionado)
+                if df_ranking is not None and not df_ranking.empty:
+                    st.success(f"✅ Ranking gerado para o perfil: {perfil_selecionado}")
+                    st.dataframe(df_ranking.style
+                        .background_gradient(subset=["Z-Score"], cmap="Greens")
+                        .background_gradient(subset=["Percentil"], cmap="Blues"),
+                        use_container_width=True
+                    )
+                else:
+                    st.warning("⚠️ Não foi possível gerar o ranking com os dados disponíveis.")
