@@ -3,6 +3,7 @@ import os
 from dados.carregar_df_streamlit import carregar_df
 import pandas as pd
 from seguranca.autenticacao import criar_autenticador
+from dados.unificar_dataframes import unificar_dataframes
 
 st.set_page_config(page_title="Scout Vasco - App de Análise de Dados", layout="wide")
 
@@ -20,7 +21,14 @@ if autenticado:
     arquivos_disponiveis = [arq for arq in os.listdir(PASTA_DATAFRAMES) if arq.endswith(('.xlsx', '.csv', '.pkl'))]
 
     # Selecionar arquivo
-    arquivo_selecionado = st.selectbox("Selecione um DataFrame:", arquivos_disponiveis)
+    arquivo_selecionado = st.selectbox("Selecione um DataFrame:", ["Todos os jogadores da base de dados"] + arquivos_disponiveis)
+    
+    if arquivo_selecionado == "Todos os jogadores da base de dados":
+        df = unificar_dataframes()
+        st.success("✅ Todos os DataFrames foram unificados com sucesso.")
+    else:
+        df = carregar_df(arquivo_selecionado)
+        st.success(f"✅ Arquivo carregado: {arquivo_selecionado}")
 
     # Carregar e mostrar o DataFrame
     if arquivo_selecionado:
