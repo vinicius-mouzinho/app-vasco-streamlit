@@ -23,18 +23,24 @@ def adicionar_metricas_derivadas(df):
 
 
 def gerar_ranking_zscore(df, metricas, pesos=None):
-    # NOVA função dinâmica
     if not metricas:
         return None
+
     df_rank = df.copy()
     df_rank = df_rank.dropna(subset=metricas)
+
     for metrica in metricas:
         df_rank[f"z_{metrica}"] = zscore(df_rank[metrica].astype(float))
+
     if pesos:
         df_rank['Z-Score'] = sum(df_rank[f"z_{m}"] * pesos.get(m, 1.0) for m in metricas)
     else:
         df_rank['Z-Score'] = df_rank[[f"z_{m}" for m in metricas]].mean(axis=1)
+
     df_rank['Percentil'] = df_rank['Z-Score'].rank(pct=True) * 100
-    colunas_base = ['Jogador', 'Posição', 'Equipa'] if 'Jogador' in df_rank.columns else []
-    colunas_finais = colunas_base + metricas + ['Z-Score', 'Percentil']
-    return df_rank[colunas_finais].sort_values(by='Z-Score', ascending=False).reset_index(drop=True)
+
+    # Garantir colunas base, com Z-Score e Percentil logo após
+    colunas_base = [col for col in ['Jogador', 'Posição', 'Equipa'] if col in df_rank.columns]
+    colunas_exibir = colunas_base + ['Z-Score', 'Percentil'] + metricas
+
+    return df_rank[colunas_exibir].sort_values(by='Z-Score', ascending=False).reset_index(drop=True)
