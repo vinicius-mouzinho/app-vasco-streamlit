@@ -59,7 +59,7 @@ def aplicar_filtros_basicos(df):
             .astype(str)
             .str.split(',', n=1).str[0]
             .replace({
-                'RMAF': 'RW', 'LMAF': 'LW', 'LAMF': 'AMF', 'RAMF': 'AMF',
+                'RMAF': 'RW', 'LMAF': 'LW', 'LAMF': 'LW', 'RAMF': 'RW',
                 'RDMF': 'DMF', 'LDMF': 'DMF', 'RCMF': 'CMF', 'LCMF': 'CMF',
                 'LWB': 'LB', 'RWB': 'RB', 'LWF': 'LW', 'RWF': 'RW'
             })
@@ -68,10 +68,11 @@ def aplicar_filtros_basicos(df):
         # Filtro por posição
         with col2:
             posicoes_disponiveis = sorted(df['Posição'].dropna().unique())
-            posicao_filtro = st.selectbox("Posição", ['Todas'] + posicoes_disponiveis)
-            if posicao_filtro != 'Todas':
-                df = df[df['Posição'] == posicao_filtro]
-                filtros_aplicados['Posição'] = posicao_filtro
+            posicoes_selecionadas = st.multiselect("Posições", posicoes_disponiveis, default=posicoes_disponiveis)
+            if posicoes_selecionadas:
+                df = df[df['Posição'].isin(posicoes_selecionadas)]
+                filtros_aplicados['Posição'] = posicoes_selecionadas
+
 
         # LINHA 2: IDADE / MINUTOS / CONTRATO
         col3, col4, col5 = st.columns(3)
