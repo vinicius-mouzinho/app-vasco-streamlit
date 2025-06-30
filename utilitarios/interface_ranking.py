@@ -18,7 +18,7 @@ def exibir_ranking_por_perfil(df):
         'Passes progressivos certos, %': 0.75,
         'Dribles certos/ 90': 1.0,
         'Remates/90': 1.0,
-        'Assistências esperadas/90': 2.0,
+        'Assistências esperadas por 100 passes': 2.0,
         'Golos sem ser por penálti/90': 2.0,
         'Toques na área/90': 2.0
     },
@@ -29,7 +29,7 @@ def exibir_ranking_por_perfil(df):
         'Frequência no drible (%)': 1.5,
         'Dribles com sucesso, %': 1.5,
         'Golos sem ser por penálti/90': 1.5,
-        'Assistências esperadas/90': 1.5,
+        'Assistências esperadas por 100 passes': 1.5,
         'Duelos Defensivos por 30\' de Posse Adversária': 2.0
     }
 
