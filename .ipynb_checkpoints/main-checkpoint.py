@@ -6,6 +6,7 @@ from utilitarios.constantes import pares_metricas_por_posicao, posicoes_equivale
 from utilitarios.funcoes_pdf import gerar_pdf_jogador
 from utilitarios.constantes import metricas_traduzidas
 import pandas as pd
+from dados.carregar_dados import normalizar_posicoes
 
 import os
 
@@ -31,8 +32,10 @@ def gerar_relatorio_dados(
     # Limpar a coluna de posição: manter apenas a primeira, se houver múltiplas
     df[coluna_posicao] = df[coluna_posicao].astype(str).apply(lambda x: x.split(",")[0].strip())
     # ✅ Carregar DataFrame da Liga BRA 2025.xlsx para os gráficos comparativos
-    caminho_df_liga = os.path.join("dataframes", "Liga BRA 2024.xlsx")
+    caminho_df_liga = os.path.join("dataframes", "Brasil 2024.xlsx")
     df_liga = pd.read_excel(caminho_df_liga)
+    df_liga = normalizar_posicoes(df_liga)
+    df_vasco = df_liga[df_liga['Equipa'].str.contains("Vasco", case=False, na=False)].copy()
     df_liga[coluna_posicao] = df_liga[coluna_posicao].astype(str).apply(lambda x: x.split(",")[0].strip())
     # === Adicionar métricas derivadas ao df_liga ===
     df_liga['Ações com a bola'] = df_liga['Passes/90'] + df_liga['Cruzamentos/90'] + df_liga['Dribles/90'] + df_liga['Remates/90']
@@ -51,7 +54,14 @@ def gerar_relatorio_dados(
         (df_liga['Cruzamentos/90'] * (100 - df_liga['Cruzamentos certos, %']) / 100)
     )
     df_liga['Frequência no drible (%)'] = 100 * df_liga['Dribles/90'] / df_liga['Ações com a bola']
-    grupo_posicao = df_liga[df_liga[coluna_posicao] == posicao]
+    from utilitarios.funcoes_grafico import obter_grupo_posicao
+
+    grupo_posicao = obter_grupo_posicao(df_liga, posicao)
+    
+    # garante q jogadores do Vasco tb estão no grupo
+    vasco_mesma_posicao = obter_grupo_posicao(df_vasco, posicao)
+    grupo_posicao = pd.concat([grupo_posicao, vasco_mesma_posicao], ignore_index=True).drop_duplicates(subset=["Jogador", "Equipa"])
+
     
     if df_auxiliar is not None:
         if 'Posição' in df_auxiliar.columns:

@@ -1,8 +1,7 @@
-# dados/carregar_df_streamlit.py
-
 import os
 import pandas as pd
 from utilitarios.funcoes_metricas import adicionar_metricas_derivadas
+from dados.carregar_dados import normalizar_posicoes  # ✅ IMPORTAR AQUI
 
 CAMINHO_PADRAO = "dataframes"
 
@@ -17,5 +16,7 @@ def carregar_df(nome_arquivo):
         df = pd.read_excel(caminho)
     else:
         raise ValueError("Formato de arquivo não suportado.")
+
+    df = normalizar_posicoes(df)  # ✅ APLICAR NORMALIZAÇÃO
     df = adicionar_metricas_derivadas(df)
     return df

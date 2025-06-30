@@ -54,12 +54,13 @@ def interpretar(jogador, metrica, valor, serie_comparativa, pontos_fortes, ponto
 def gerar_paragrafo_com_grafico(
     m1, m2, texto_1, texto_2,
     grupo_posicao, jogador, equipa,
-    imagens, textos, exportar_pdf
+    imagens, textos, exportar_pdf,
+    df_vasco=None
 ):
     def exibir_grafico_dispersao(df_plot, metrica_x, metrica_y, jogador, equipa, nome_arquivo=None):
         fig, ax = plt.subplots(figsize=(6, 5))
         outros = df_plot[(df_plot['Equipa'] != 'Vasco da Gama') & ~(df_plot['Jogador'] == jogador)]
-        vasco = df_plot[df_plot['Equipa'] == 'Vasco da Gama']
+        vasco = df_vasco if df_vasco is not None else df_plot[df_plot['Equipa'].str.contains("Vasco", case=False, na=False)]
         jogador_row = df_plot[(df_plot['Jogador'] == jogador) & (df_plot['Equipa'] == equipa)]
 
         ax.scatter(outros[metrica_x], outros[metrica_y], color='gray', alpha=0.4)
