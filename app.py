@@ -1,7 +1,7 @@
 import streamlit as st
 import os
-from dados.carregar_df_streamlit import carregar_df
 import pandas as pd
+from dados.carregar_df_streamlit import carregar_df
 from seguranca.autenticacao import criar_autenticador
 from dados.unificar_dataframes import unificar_dataframes
 from utilitarios.filtros import aplicar_filtros_basicos
@@ -18,52 +18,51 @@ if autenticado:
     st.sidebar.success(f'Bem-vindo, {nome}!')
     st.title("📊 Scout Vasco - App de Análise de Dados")
 
-    # Caminho fixo para a pasta com os DataFrames
-    PASTA_DATAFRAMES = "dataframes"
-    arquivos_disponiveis = sorted(
-    [arq for arq in os.listdir(PASTA_DATAFRAMES) if arq.endswith(('.xlsx', '.csv', '.pkl'))]
-)
-
-    arquivos_disponiveis = sorted(
-    [arq for arq in os.listdir(PASTA_DATAFRAMES) if arq.endswith(('.xlsx', '.csv', '.pkl'))]
+    # Menu de abas
+    aba_selecionada = st.sidebar.radio(
+        "Escolha uma seção:",
+        ("Filtros e Tabelas", "Relatório Individual", "Ranking por Perfil")
     )
 
+    # Carregamento dos arquivos
+    PASTA_DATAFRAMES = "dataframes"
+    arquivos_disponiveis = sorted([
+        arq for arq in os.listdir(PASTA_DATAFRAMES)
+        if arq.endswith(('.xlsx', '.csv', '.pkl'))
+    ])
     arquivo_selecionado = st.selectbox("Selecione um DataFrame:", arquivos_disponiveis)
 
+    # Carregar e aplicar filtros
     df = carregar_df(arquivo_selecionado)
+    df_filtrado, filtros_aplicados = aplicar_filtros_basicos(df)
     st.success(f"✅ Arquivo carregado: {arquivo_selecionado}")
 
-
-    if arquivo_selecionado:
-        df, filtros_aplicados = aplicar_filtros_basicos(df)
-    
+    # Aba 1: Filtros e Tabelas
+    if aba_selecionada == "Filtros e Tabelas":
         st.markdown("---")
         st.subheader("📋 Dados filtrados")
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df_filtrado, use_container_width=True)
 
-        st.markdown("---")
+    # Aba 2: Relatório Individual
+    elif aba_selecionada == "Relatório Individual":
         st.header("📄 Gerar Relatório Individual")
 
-        jogadores = sorted(df['Jogador'].dropna().unique())
+        jogadores = sorted(df_filtrado['Jogador'].dropna().unique())
         jogador_selecionado = st.selectbox("Escolha o jogador para gerar o relatório:", jogadores)
 
-        coluna_posicao = 'Pos.' if 'Pos.' in df.columns else 'Posição'
-        posicoes = sorted(df[coluna_posicao].dropna().unique())
+        coluna_posicao = 'Pos.' if 'Pos.' in df_filtrado.columns else 'Posição'
+        posicoes = sorted(df_filtrado[coluna_posicao].dropna().unique())
         posicao_selecionada = st.selectbox("Selecione a posição do jogador:", posicoes)
 
         if st.button("Gerar Relatório PDF"):
             from main import gerar_relatorio_dados
 
-            # Obter equipe
-            equipa = df[df['Jogador'] == jogador_selecionado]['Equipa'].values[0]
-
-            # Criar DataFrame auxiliar com posição ajustada
-            df_auxiliar = df[df['Jogador'] == jogador_selecionado].copy()
+            equipa = df_filtrado[df_filtrado['Jogador'] == jogador_selecionado]['Equipa'].values[0]
+            df_auxiliar = df_filtrado[df_filtrado['Jogador'] == jogador_selecionado].copy()
             df_auxiliar[coluna_posicao] = posicao_selecionada
 
-            # Gerar relatório
             caminho_pdf = gerar_relatorio_dados(
-                df=df,
+                df=df_filtrado,
                 jogador=jogador_selecionado,
                 equipa=equipa,
                 posicao=posicao_selecionada,
@@ -86,4 +85,6 @@ if autenticado:
             else:
                 st.error("❌ O relatório não pôde ser gerado. Verifique os dados disponíveis.")
 
-        exibir_ranking_por_perfil(df)
+    # Aba 3: Ranking por Perfil
+    elif aba_selecionada == "Ranking por Perfil":
+        exibir_ranking_por_perfil(df_filtrado)

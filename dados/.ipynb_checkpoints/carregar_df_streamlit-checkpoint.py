@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from utilitarios.funcoes_metricas import adicionar_metricas_derivadas
-from dados.carregar_dados import normalizar_posicoes  # ✅ IMPORTAR AQUI
+from dados.carregar_dados import normalizar_posicoes
 
 CAMINHO_PADRAO = "dataframes"
 
@@ -10,6 +10,18 @@ def carregar_df(nome_arquivo):
     
     if nome_arquivo.endswith('.pkl'):
         df = pd.read_pickle(caminho)
+        df = df.copy()
+        df.reset_index(drop=True, inplace=True)
+
+        for col in df.columns:
+            if isinstance(df[col].dtype, pd.CategoricalDtype):
+                df[col] = df[col].astype(str)
+            elif df[col].dtype == object:
+                try:
+                    df[col] = pd.to_numeric(df[col], errors='ignore')
+                except Exception:
+                    pass
+
     elif nome_arquivo.endswith('.csv'):
         df = pd.read_csv(caminho)
     elif nome_arquivo.endswith('.xlsx'):
@@ -17,6 +29,6 @@ def carregar_df(nome_arquivo):
     else:
         raise ValueError("Formato de arquivo não suportado.")
 
-    df = normalizar_posicoes(df)  # ✅ APLICAR NORMALIZAÇÃO
+    df = normalizar_posicoes(df)
     df = adicionar_metricas_derivadas(df)
     return df

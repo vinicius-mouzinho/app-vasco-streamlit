@@ -1,3 +1,5 @@
+# utilitarios/funcoes_metricas.py
+
 import pandas as pd
 from scipy.stats import zscore, percentileofscore
 

@@ -1,3 +1,5 @@
+# utilitarios/filtros.py
+
 import streamlit as st
 
 def aplicar_filtros_basicos(df):
