@@ -29,6 +29,16 @@ def carregar_df(nome_arquivo):
     else:
         raise ValueError("Formato de arquivo não suportado.")
 
+    # Adicionar coluna 'Liga' com base no nome do arquivo (sem extensão)
+    if 'Liga' not in df.columns:
+        nome_liga = os.path.splitext(nome_arquivo)[0]
+        df['Liga'] = nome_liga
+
+
+    # Remover coluna antiga se existir
+    if 'Arquivo_Origem' in df.columns:
+        df.drop(columns=['Arquivo_Origem'], inplace=True)
+
     df = normalizar_posicoes(df)
     df = adicionar_metricas_derivadas(df)
     return df

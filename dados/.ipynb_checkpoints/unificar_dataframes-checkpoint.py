@@ -1,5 +1,3 @@
-# dados/unificar_dataframes.py
-
 import pandas as pd
 import os
 
@@ -9,7 +7,7 @@ def unificar_dataframes(pasta="dataframes"):
 
     for arquivo in arquivos:
         caminho = os.path.join(pasta, arquivo)
-        nome_origem = os.path.splitext(arquivo)[0]  # Ex: 'Argentina 2025'
+        nome_liga = os.path.splitext(arquivo)[0]  # Ex: 'Argentina 2025'
 
         try:
             if arquivo.endswith('.xlsx'):
@@ -21,8 +19,14 @@ def unificar_dataframes(pasta="dataframes"):
             else:
                 continue
 
-            # Adiciona coluna com origem
-            df['Fonte'] = nome_origem
+            # Adiciona coluna 'Liga' com nome limpo do arquivo
+            df['Liga'] = nome_liga
+
+            # Remove coluna antiga se existir
+            if 'Arquivo_Origem' in df.columns:
+                df.drop(columns=['Arquivo_Origem'], inplace=True)
+            if 'Fonte' in df.columns:
+                df.drop(columns=['Fonte'], inplace=True)
 
             # Adiciona à lista
             lista_df.append(df)
@@ -30,14 +34,8 @@ def unificar_dataframes(pasta="dataframes"):
         except Exception as e:
             print(f"Erro ao carregar {arquivo}: {e}")
 
-    # Concatena todos
     if lista_df:
         df_unificado = pd.concat(lista_df, ignore_index=True)
-
-        # Opcional: remover duplicatas por jogador + equipe + posição
-        #if 'Jogador' in df_unificado.columns and 'Equipa' in df_unificado.columns:
-            #df_unificado.drop_duplicates(subset=['Jogador', 'Equipa'], inplace=True)
-
         return df_unificado
     else:
-        return pd.DataFrame()  # Retorna vazio se nada carregou
+        return pd.DataFrame()

@@ -434,3 +434,23 @@ posicoes_formatadas = {
     "RCB": "Zagueiro",
     "LCB": "Zagueiro"
 }
+
+liga_forca = {
+    'Inglaterra 24-25': 100.0,
+    'Espanha 24-25': 94.0,
+    'Itália 24-25': 94.0,
+    'Alemanha 24-25': 93.2,
+    'França 24-25': 92.3,
+    'Bélgica 24-25': 86.9,
+    'Portugal 24-25': 86.2,
+    'Brasil 2024': 85.7,
+    'Brasil 2025': 85.7,
+    'Holanda 24-25': 85.1,
+    'Argentina 2025': 84.9,
+    'EUA 25': 84.8,
+    'México 24-25': 84.8,
+    'Japão 2025': 84.1,
+    'Croácia 24-25': 84.0,
+    'Polônia 2025': 8
+}
+

@@ -6,6 +6,7 @@ from seguranca.autenticacao import criar_autenticador
 from dados.unificar_dataframes import unificar_dataframes
 from utilitarios.filtros import aplicar_filtros_basicos
 from utilitarios.interface_ranking import exibir_ranking_por_perfil
+from utilitarios.estruturas_tabela import selecionar_colunas
 
 st.set_page_config(page_title="Scout Vasco - App de Análise de Dados", layout="wide")
 
@@ -31,8 +32,6 @@ if autenticado:
         if arq.endswith(('.xlsx', '.csv', '.pkl'))
     ])
     arquivo_selecionado = st.selectbox("Selecione um DataFrame:", arquivos_disponiveis)
-
-    # Carregar e aplicar filtros
     df = carregar_df(arquivo_selecionado)
     df_filtrado, filtros_aplicados = aplicar_filtros_basicos(df)
     st.success(f"✅ Arquivo carregado: {arquivo_selecionado}")
@@ -40,8 +39,16 @@ if autenticado:
     # Aba 1: Filtros e Tabelas
     if aba_selecionada == "Filtros e Tabelas":
         st.markdown("---")
-        st.subheader("📋 Dados filtrados")
-        st.dataframe(df_filtrado, use_container_width=True)
+        st.subheader("📋 Visualização dos Dados")
+    
+        tipo_tabela = st.selectbox(
+            "Selecione o tipo de tabela:",
+            ["Completa", "Finalização", "Último Passe", "Construção de jogo"]
+        )
+    
+        df_tabela = selecionar_colunas(df_filtrado, tipo_tabela)
+        st.dataframe(df_tabela, use_container_width=True)
+
 
     # Aba 2: Relatório Individual
     elif aba_selecionada == "Relatório Individual":
