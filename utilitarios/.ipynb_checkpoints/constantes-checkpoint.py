@@ -435,6 +435,10 @@ posicoes_formatadas = {
     "LCB": "Zagueiro"
 }
 
+# utilitarios/constantes.py
+
+# utilitarios/constantes.py
+
 liga_forca = {
     'Inglaterra 24-25': 100.0,
     'Espanha 24-25': 94.0,
@@ -451,6 +455,33 @@ liga_forca = {
     'México 24-25': 84.8,
     'Japão 2025': 84.1,
     'Croácia 24-25': 84.0,
-    'Polônia 2025': 8
+    'Polônia 2025': 83.8,
+    'Dinamarca 24-25': 83.8,
+    'Grécia 24-25': 83.0,
+    'França B 24-25': 83.0,
+    'Suécia 2025': 82.4,
+    'Turquia 24-25': 82.3,
+    'Rússia 24-25': 82.2,
+    'Áustria 2025': 82.2,
+    'Coreia do Sul 2025': 82.0,
+    'Noruega 2025': 82.0,
+    'República Tcheca 24-25': 81.5,
+    'Equador 2025': 81.3,
+    'Arábia Saudita 24-25': 81.1,
+    'Hungria 2025': 81.0,
+    'Brasil B 2025': 80.0,
+    'Uruguai 2025': 80.0,
+    'Espanha B 24-25': 85.0,
+    'Itália B 24-25': 85.0,
+    'Alemanha B 24-25': 84.5,
+    'Inglaterra B 24-25': 88.0,
+    'Colômbia 2025': 78.0,
+    'Bulgária 2025': 77.5,
+    'Chile 2025': 77.5,
+    'Peru 2025': 76.0,
+    'Paraguai 2025': 76.0,
+    'Emirados Árabes Unidos 24-25': 76.0,
+    'Catar 24-25': 75.5,
+    'Venezuela 2025': 74.5,
+    'Bolívia 2025': 72.0
 }
-

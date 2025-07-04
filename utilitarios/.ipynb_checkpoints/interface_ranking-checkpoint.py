@@ -1,3 +1,5 @@
+# utilitarios/interface_ranking.py
+
 import streamlit as st
 from utilitarios.funcoes_metricas import gerar_ranking_zscore
 from utilitarios.constantes import liga_forca
@@ -64,16 +66,31 @@ def exibir_ranking_por_perfil(df):
 
         if st.button("🔄 Gerar Ranking"):
             with st.spinner("Calculando ranking..."):
-                df_ranking = gerar_ranking_cached(df, metricas_selecionadas, pesos)
+                df_ranking_raw = gerar_ranking_cached(df, metricas_selecionadas, pesos)
 
-                if df_ranking is not None and not df_ranking.empty:
+                if df_ranking_raw is not None and not df_ranking_raw.empty:
+                    df_ranking = df_ranking_raw.copy()
+                    if 'Liga' in df.columns:
+                        if all(col in df.columns for col in ['Jogador', 'Equipa']) and all(col in df_ranking.columns for col in ['Jogador', 'Equipa']):
+                            df_ranking = df_ranking.merge(
+                                df[['Jogador', 'Equipa', 'Liga']],
+                                on=['Jogador', 'Equipa'],
+                                how='left'
+                            )
+
                     if ajustar_por_liga and 'Liga' in df_ranking.columns:
                         df_ranking['Força da Liga'] = df_ranking['Liga'].map(liga_forca).fillna(80)
                         df_ranking['Z-Score Ajustado'] = df_ranking['Z-Score'] * df_ranking['Força da Liga'] / 100
                         df_ranking['Percentil Ajustado'] = df_ranking['Z-Score Ajustado'].rank(pct=True) * 100
 
+                        # Organizar colunas para exibição
+                        colunas_base = ['Jogador', 'Equipa', 'Posição', 'Liga', 'Força da Liga',
+                                        'Z-Score Ajustado', 'Percentil Ajustado']
+                        colunas_extra = [col for col in df_ranking.columns if col not in colunas_base]
+                        df_exibir = df_ranking[colunas_base + colunas_extra]
+
                         st.success(f"✅ Ranking ajustado por liga gerado com {len(metricas_selecionadas)} métricas")
-                        st.dataframe(df_ranking.style
+                        st.dataframe(df_exibir.style
                             .background_gradient(subset=["Z-Score Ajustado"], cmap="Greens")
                             .background_gradient(subset=["Percentil Ajustado"], cmap="Blues"),
                             use_container_width=True
@@ -87,5 +104,6 @@ def exibir_ranking_por_perfil(df):
                         )
                 else:
                     st.warning("⚠️ Ranking vazio ou erro nos dados.")
+
     else:
         st.info("Selecione um perfil para visualizar e ajustar métricas.")
