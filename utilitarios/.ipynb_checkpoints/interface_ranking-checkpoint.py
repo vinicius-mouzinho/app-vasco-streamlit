@@ -24,6 +24,7 @@ def exibir_ranking_por_perfil(df):
             'Golos sem ser por penálti/90': 2.0,
             'Toques na área/90': 2.0
         },
+        
         "Extremo de força": {
             'Acelerações/90': 0.75,
             'Corridas progressivas/90': 1.25,
@@ -33,7 +34,24 @@ def exibir_ranking_por_perfil(df):
             'Assistências esperadas por 100 passes': 1.5,
             'Duelos Defensivos por 30\' de Posse Adversária': 2.0,
             'Perdas de bola a cada 100 ações': -1.5
+        },
+        
+        "1º Volante Construtor": {
+            'Ações Defensivas por 30\' de Posse Adversária': 1.5,
+            'Duelos Defensivos por 30\' de Posse Adversária': 1.5,
+            'Duelos aérios/90': 0.5,
+            'Duelos aéreos ganhos, %': 0.5,
+            'Faltas sofridas/90': 0.5,
+            'Corridas progressivas/90': 0.5,
+            
+            'Ações com a bola/90': 2.0,
+            'Passes para terço final/90': 1.0,
+            'Passes certos para terço final, %': 1.0,
+            'Passes progressivos/90': 1.5,
+            'Passes progressivos certos, %': 1.5,
+            'Perdas de bola a cada 100 ações': -2.0
         }
+
     }
 
     perfil_selecionado = st.selectbox("Escolha um perfil-base:", ["Nenhum"] + list(PERFIS_PRE_DEFINIDOS.keys()))
