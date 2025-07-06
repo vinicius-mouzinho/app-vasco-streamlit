@@ -1,7 +1,7 @@
 # utilitarios/funcoes_metricas.py
 
 import pandas as pd
-from scipy.stats import zscore, percentileofscore
+from scipy.stats import zscore
 
 def adicionar_metricas_derivadas(df):
     df['Ações com a bola/90'] = df['Passes/90'] + df['Cruzamentos/90'] + df['Dribles/90'] + df['Remates/90']
@@ -25,8 +25,6 @@ def adicionar_metricas_derivadas(df):
     return df
 
 
-
-
 def gerar_ranking_zscore(df, metricas, pesos=None):
     if not metricas:
         return None
@@ -44,8 +42,8 @@ def gerar_ranking_zscore(df, metricas, pesos=None):
 
     df_rank['Percentil'] = df_rank['Z-Score'].rank(pct=True) * 100
 
-    # Garantir colunas base, com Z-Score e Percentil logo após
-    colunas_base = [col for col in ['Jogador', 'Posição', 'Equipa'] if col in df_rank.columns]
+    # ✅ Incluir 'Liga' se ela estiver presente no DataFrame original
+    colunas_base = [col for col in ['Jogador', 'Posição', 'Equipa', 'Liga'] if col in df.columns]
     colunas_exibir = colunas_base + ['Z-Score', 'Percentil'] + metricas
 
     return df_rank[colunas_exibir].sort_values(by='Z-Score', ascending=False).reset_index(drop=True)

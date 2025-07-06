@@ -84,24 +84,22 @@ def exibir_ranking_por_perfil(df):
 
         if st.button("🔄 Gerar Ranking"):
             with st.spinner("Calculando ranking..."):
-                df_ranking_raw = gerar_ranking_cached(df, metricas_selecionadas, pesos)
+                # 🔄 Garantir que só entre uma linha por jogador + equipa
+                df_filtrado = df.copy()
+                if 'Minutos jogados' in df_filtrado.columns:
+                    df_filtrado = df_filtrado.sort_values(by='Minutos jogados', ascending=False)
+
+                df_filtrado = df_filtrado.drop_duplicates(subset=['Jogador', 'Equipa', 'Liga'])
+
+                df_ranking_raw = gerar_ranking_cached(df_filtrado, metricas_selecionadas, pesos)
 
                 if df_ranking_raw is not None and not df_ranking_raw.empty:
                     df_ranking = df_ranking_raw.copy()
-                    if 'Liga' in df.columns:
-                        if all(col in df.columns for col in ['Jogador', 'Equipa']) and all(col in df_ranking.columns for col in ['Jogador', 'Equipa']):
-                            df_ranking = df_ranking.merge(
-                                df[['Jogador', 'Equipa', 'Liga']],
-                                on=['Jogador', 'Equipa'],
-                                how='left'
-                            )
-
                     if ajustar_por_liga and 'Liga' in df_ranking.columns:
                         df_ranking['Força da Liga'] = df_ranking['Liga'].map(liga_forca).fillna(80)
                         df_ranking['Z-Score Ajustado'] = df_ranking['Z-Score'] * df_ranking['Força da Liga'] / 100
                         df_ranking['Percentil Ajustado'] = df_ranking['Z-Score Ajustado'].rank(pct=True) * 100
 
-                        # Organizar colunas para exibição
                         colunas_base = ['Jogador', 'Equipa', 'Posição', 'Liga', 'Força da Liga',
                                         'Z-Score Ajustado', 'Percentil Ajustado']
                         colunas_extra = [col for col in df_ranking.columns if col not in colunas_base]
@@ -122,6 +120,7 @@ def exibir_ranking_por_perfil(df):
                         )
                 else:
                     st.warning("⚠️ Ranking vazio ou erro nos dados.")
+
 
     else:
         st.info("Selecione um perfil para visualizar e ajustar métricas.")
