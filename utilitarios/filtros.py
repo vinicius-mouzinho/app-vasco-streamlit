@@ -1,5 +1,5 @@
 # utilitarios/filtros.py
-
+import pandas as pd
 import streamlit as st
 
 def aplicar_filtros_basicos(df):
@@ -96,10 +96,19 @@ def aplicar_filtros_basicos(df):
         with col5:
             col_contrato = next((col for col in df.columns if 'contrato' in col.lower()), None)
             if col_contrato:
-                anos_contrato = sorted(df[col_contrato].dropna().astype(str).unique())
-                ano_filtro = st.selectbox("Contrato termina em:", ["Todos"] + anos_contrato)
-                if ano_filtro != "Todos":
-                    df = df[df[col_contrato].astype(str).str.contains(ano_filtro)]
-                    filtros_aplicados['Contrato termina'] = ano_filtro
+                # Tentativa de conversão para datetime (se ainda não for)
+                df[col_contrato] = pd.to_datetime(df[col_contrato], errors='coerce', dayfirst=True)
+
+                # Remover nulos para não atrapalhar o filtro
+                datas_validas = df[col_contrato].dropna()
+
+                if not datas_validas.empty:
+                    data_min = datas_validas.min().date()
+                    data_max = datas_validas.max().date()
+                    data_limite = st.date_input("Contrato termina até:", value=data_max, min_value=data_min, max_value=data_max)
+
+                    df = df[df[col_contrato].dt.date <= data_limite]
+                    filtros_aplicados['Contrato termina até'] = data_limite
+
 
     return df, filtros_aplicados
