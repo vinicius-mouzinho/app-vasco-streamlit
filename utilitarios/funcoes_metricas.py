@@ -22,6 +22,9 @@ def adicionar_metricas_derivadas(df):
     df['Frequência no drible (%)'] = 100 * df['Dribles/90'] / df['Ações com a bola/90']
     df['Assistências esperadas por 100 passes'] = df['Assistências esperadas/90'] / df['Passes/90'] * 100
     df['Perdas de bola a cada 100 ações'] = df['Perdas de bola/90'] / df['Ações com a bola/90'] * 100
+    df['Gols esperados (sem pênaltis)/90'] = (
+    (df['Golos esperados'] - (df['Penaltis marcados'] * 0.74)) / (df['Minutos jogados:'] / 90)
+)
     return df
 
 

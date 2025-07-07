@@ -9,6 +9,8 @@ from dados.unificar_dataframes import unificar_dataframes
 from utilitarios.filtros import aplicar_filtros_basicos
 from utilitarios.interface_ranking import exibir_ranking_por_perfil
 from utilitarios.estruturas_tabela import selecionar_colunas
+from paginas.comparador import exibir_comparador
+
 
 st.set_page_config(page_title="Scout Vasco - App de Análise de Dados", layout="wide")
 
@@ -24,7 +26,7 @@ if autenticado:
     # Menu de abas
     aba_selecionada = st.sidebar.radio(
         "Escolha uma seção:",
-        ("Filtros e Tabelas", "Relatório Individual", "Ranking por Perfil")
+        ("Filtros e Tabelas", "Relatório Individual", "Ranking por Perfil", "Comparador entre jogadores")
     )
 
     # Carregamento dos arquivos
@@ -97,3 +99,8 @@ if autenticado:
     # Aba 3: Ranking por Perfil
     elif aba_selecionada == "Ranking por Perfil":
         exibir_ranking_por_perfil(df_filtrado)
+
+    # Aba 4: Comparador entre Jogadores
+    elif aba_selecionada == "Comparador entre jogadores":
+        from paginas.comparador import exibir_comparador
+        exibir_comparador(df_filtrado)

@@ -14,28 +14,7 @@ def exibir_ranking_por_perfil(df):
     st.header("📈 Ranking por Perfil de Jogador")
 
     PERFIS_PRE_DEFINIDOS = {
-        "Meia de infiltração": {
-            'Corridas progressivas/90': 0.5,
-            'Passes progressivos/90': 0.75,
-            'Passes progressivos certos, %': 0.75,
-            'Dribles certos/ 90': 1.0,
-            'Remates/90': 1.0,
-            'Assistências esperadas por 100 passes': 2.0,
-            'Golos sem ser por penálti/90': 2.0,
-            'Toques na área/90': 2.0
-        },
-        
-        "Extremo de força": {
-            'Acelerações/90': 0.75,
-            'Corridas progressivas/90': 1.25,
-            'Frequência no drible (%)': 1.5,
-            'Dribles com sucesso, %': 1.5,
-            'Golos sem ser por penálti/90': 1.5,
-            'Assistências esperadas por 100 passes': 1.5,
-            'Duelos Defensivos por 30\' de Posse Adversária': 2.0,
-            'Perdas de bola a cada 100 ações': -1.5
-        },
-        
+
         "1º Volante Construtor": {
             'Ações Defensivas por 30\' de Posse Adversária': 1.5,
             'Duelos Defensivos por 30\' de Posse Adversária': 1.5,
@@ -50,6 +29,39 @@ def exibir_ranking_por_perfil(df):
             'Passes progressivos/90': 1.5,
             'Passes progressivos certos, %': 1.5,
             'Perdas de bola a cada 100 ações': -2.0
+        },
+        
+        "Meia de infiltração": {
+            'Corridas progressivas/90': 1.0,
+            'Passes progressivos/90': 1.0,
+            'Passes progressivos certos, %': 1.0, 
+            'Dribles certos/ 90': 1.0, # Progressão: 4.0
+        
+            
+            'Golos sem ser por penálti/90': 2.0,
+            'Gols esperados (sem pênaltis)/90': 2.0,
+            'Toques na área/90': 1.0, # Gols / Infiltração: 5.0
+
+            'Assistências esperadas por 100 passes': 3.0, # Criatividade: 3.0
+
+            'Perdas de bola a cada 100 ações': -2.0 # Perdas de posse: -2.0                      TOTAL = 12.0 - 2.0 = 10.0
+        },
+        
+        "Extremo de força": {
+            
+            'Acelerações/90': 0.75,
+            'Corridas progressivas/90': 1.25,
+            'Frequência no drible (%)': 1.5,
+            'Dribles com sucesso, %': 1.5,      # Capacidade de drible e condução: 5.0
+            
+            'Golos sem ser por penálti/90': 1.25,
+            'Gols esperados (sem pênaltis)/90': 1.25, # Capacidade de marcar gols: 2.5
+            
+            'Assistências esperadas por 100 passes': 2.5, # Capacidade criativa: 2.5
+            
+            'Duelos Defensivos por 30\' de Posse Adversária': 2.0, # Ajuda defensiva: 2.0             TOTAL POSITIVO = 12.0
+            
+            'Perdas de bola a cada 100 ações': -2.0 # Perdas de posse: -2.0                      TOTAL = 12.0 - 2.0 = 10.0
         }
 
     }
@@ -93,6 +105,16 @@ def exibir_ranking_por_perfil(df):
 
                 df_ranking_raw = gerar_ranking_cached(df_filtrado, metricas_selecionadas, pesos)
 
+                # 🔁 Merge para recuperar colunas extras
+                colunas_extras = ['Idade', 'Minutos jogados:', 'Valor de mercado', 'Contrato termina']
+                colunas_disponiveis = [col for col in colunas_extras if col in df_filtrado.columns]
+
+                df_ranking_raw = df_ranking_raw.merge(
+                    df_filtrado[['Jogador', 'Equipa'] + colunas_disponiveis],
+                    on=['Jogador', 'Equipa'],
+                    how='left'
+                )
+
                 if df_ranking_raw is not None and not df_ranking_raw.empty:
                     df_ranking = df_ranking_raw.copy()
                     if ajustar_por_liga and 'Liga' in df_ranking.columns:
@@ -100,8 +122,11 @@ def exibir_ranking_por_perfil(df):
                         df_ranking['Z-Score Ajustado'] = df_ranking['Z-Score'] * df_ranking['Força da Liga'] / 100
                         df_ranking['Percentil Ajustado'] = df_ranking['Z-Score Ajustado'].rank(pct=True) * 100
 
-                        colunas_base = ['Jogador', 'Equipa', 'Posição', 'Liga', 'Força da Liga',
-                                        'Z-Score Ajustado', 'Percentil Ajustado']
+                        colunas_base = [
+                            'Jogador', 'Equipa', 'Posição', 'Idade', 'Minutos jogados:',
+                            'Valor de mercado', 'Contrato termina', 'Liga', 'Força da Liga',
+                            'Z-Score Ajustado', 'Percentil Ajustado'
+                        ]
                         colunas_extra = [col for col in df_ranking.columns if col not in colunas_base]
                         df_exibir = df_ranking[colunas_base + colunas_extra]
 
@@ -112,14 +137,24 @@ def exibir_ranking_por_perfil(df):
                             use_container_width=True
                         )
                     else:
+                        df_ranking['Percentil'] = df_ranking['Z-Score'].rank(pct=True) * 100
+
+                        colunas_base = [
+                            'Jogador', 'Equipa', 'Posição', 'Idade', 'Minutos jogados',
+                            'Valor de mercado', 'Contrato termina', 'Liga', 'Z-Score', 'Percentil'
+                        ]
+                        colunas_extra = [col for col in df_ranking.columns if col not in colunas_base]
+                        df_exibir = df_ranking[colunas_base + colunas_extra]
+
                         st.success(f"✅ Ranking gerado com {len(metricas_selecionadas)} métricas (sem ajuste por liga)")
-                        st.dataframe(df_ranking.style
+                        st.dataframe(df_exibir.style
                             .background_gradient(subset=["Z-Score"], cmap="Greens")
                             .background_gradient(subset=["Percentil"], cmap="Blues"),
                             use_container_width=True
                         )
                 else:
                     st.warning("⚠️ Ranking vazio ou erro nos dados.")
+
 
 
     else:
