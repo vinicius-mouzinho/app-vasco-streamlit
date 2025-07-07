@@ -485,3 +485,55 @@ liga_forca = {
     'Venezuela 2025': 74.5,
     'Bolívia 2025': 72.0
 }
+
+
+ABREVIACOES_LIGAS = {
+    "Alemanha": "ALE",
+    "Alemanha B": "ALE B",
+    "Arábia Saudita": "ARA",
+    "Argentina": "ARG",
+    "Áustria": "AUS",
+    "Bélgica": "BEL",
+    "Bolívia": "BOL",
+    "Brasil": "BRA",
+    "Brasil B": "BRA B",
+    "Bulgária": "BUL",
+    "Catar": "CAT",
+    "Chile": "CHI",
+    "Colômbia": "COL",
+    "Coreia do Sul": "COR",
+    "Croácia": "CRO",
+    "Dinamarca": "DIN",
+    "Emirados Árabes Unidos": "EAU",
+    "Equador": "EQU",
+    "Espanha": "ESP",
+    "Espanha B": "ESP B",
+    "EUA": "EUA",
+    "França": "FRA",
+    "França B": "FRA B",
+    "Grécia": "GRE",
+    "Holanda": "HOL",
+    "Inglaterra": "ING",
+    "Inglaterra B": "ING B",
+    "Itália": "ITA",
+    "Itália B": "ITA B",
+    "Japão": "JAP",
+    "México": "MEX",
+    "Noruega": "NOR",
+    "Paraguai": "PAR",
+    "Peru": "PER",
+    "Portugal": "POR",
+    "República Tcheca": "RTC",
+    "Rússia": "RUS",
+    "Turquia": "TUR",
+    "Uruguai": "URU",
+    "Venezuela": "VEN"
+}
+
+
+def abreviar_liga(nome_liga):
+    for nome_completo, abreviacao in ABREVIACOES_LIGAS.items():
+        if nome_liga.startswith(nome_completo):
+            sufixo = nome_liga.replace(nome_completo, "").strip()
+            return f"{abreviacao} {sufixo}"
+    return nome_liga
