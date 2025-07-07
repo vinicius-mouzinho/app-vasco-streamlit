@@ -240,6 +240,7 @@ def exportar_ranking_pdf(df, perfil, pesos_utilizados, top_n=20):
         'Z-Score Ajustado': 'Z-Score'
     }, inplace=True)
 
+
     df_pdf['Valor de mercado'] = df_pdf['Valor de mercado'].apply(
     lambda x: "Não informado" if isinstance(x, str) and x.strip() == "€0" else x
     )

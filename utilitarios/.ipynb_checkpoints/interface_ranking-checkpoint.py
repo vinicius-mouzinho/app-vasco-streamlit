@@ -133,13 +133,15 @@ def exibir_ranking_por_perfil(df):
         colunas_extra = [col for col in df_ranking.columns if col not in colunas_base]
         df_exibir = df_ranking[colunas_base + colunas_extra].copy()
         
-        # 🔧 Ajustes visuais
+        # 🔧 Ajuste: arredondar floats
         colunas_float = df_exibir.select_dtypes(include=['float']).columns
         df_exibir[colunas_float] = df_exibir[colunas_float].round(2)
         
+        # 🔧 Corrigir idade
         if 'Idade' in df_exibir.columns:
             df_exibir['Idade'] = df_exibir['Idade'].fillna(0).astype(int)
         
+        # 🔧 Corrigir valor de mercado
         if 'Valor de mercado' in df_exibir.columns:
             def formatar_valor(valor):
                 try:
@@ -148,22 +150,47 @@ def exibir_ranking_por_perfil(df):
                         return f"€{valor_float / 1_000_000:.2f}M"
                     elif valor_float >= 1_000:
                         return f"€{valor_float / 1_000:.0f} mil"
+                    elif valor_float == 0:
+                        return "Não informado"
                     else:
                         return f"€{valor_float:.0f}"
                 except:
                     return valor
-        
             df_exibir['Valor de mercado'] = df_exibir['Valor de mercado'].apply(formatar_valor)
         
-        # 📊 Exibir tabela
+        # 🔲 Gradiente personalizado para métricas do perfil
+        metricas_para_gradiente = [m for m in metricas_selecionadas if m in df_exibir.columns]
+        style = df_exibir.style
+
+        # Definir colunas Z/P
         coluna_z = "Z-Score Ajustado" if ajustar_por_liga else "Z-Score"
         coluna_p = "Percentil Ajustado" if ajustar_por_liga else "Percentil"
-        
-        st.dataframe(df_exibir.style
-            .background_gradient(subset=[coluna_z], cmap="Greens")
-            .background_gradient(subset=[coluna_p], cmap="Blues"),
-            use_container_width=True
-        )
+
+        # Gradiente nos Z-Scores e Percentis
+        style = style.background_gradient(subset=[coluna_z], cmap="Greens")
+        style = style.background_gradient(subset=[coluna_p], cmap="Blues")
+
+        # Métricas cujo menor valor é melhor
+        metricas_invertidas = ["Perdas de bola a cada 100 ações"]
+
+        for metrica in metricas_para_gradiente:
+            if metrica in df_exibir.columns:
+                serie = df_exibir[metrica]
+
+                # Usa ranking percentual
+                percentis = serie.rank(pct=True)
+
+                # Inverte o gradiente se for métrica negativa
+                if metrica in metricas_invertidas:
+                    percentis = 1 - percentis
+
+                style = style.background_gradient(
+                    subset=[metrica],
+                    cmap="RdYlGn",
+                    gmap=percentis
+                )
+
+        st.dataframe(style, use_container_width=True)
 
 
         # PDF export
