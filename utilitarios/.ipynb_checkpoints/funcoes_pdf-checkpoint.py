@@ -78,6 +78,7 @@ def gerar_pdf_jogador(
     jogador, posicao, equipa, liga,
     textos, imagens,
     radar_path=None,
+    radar_path_final=None,
     texto_conclusao=None,
     resumo_desempenho=None,
     comparacao_contextual_bs=None,
@@ -170,6 +171,15 @@ def gerar_pdf_jogador(
             story.append(Paragraph("Pontos de atenção", TituloResumo))
             story.append(Spacer(1, 6))
             story.append(Paragraph(", ".join(pontos_fracos), TextoResumo))
+            
+    # Radar no final (se fornecido)
+    if radar_path_final and os.path.exists(radar_path_final):
+        story.append(PageBreak())
+        story.append(Paragraph("Radar de Desempenho Geral", TituloResumo))
+        story.append(Spacer(1, 10))
+        story.append(Image(radar_path_final, width=15*cm, height=15*cm))
+        story.append(Spacer(1, 10))
+
 
     doc.build(story)
     return caminho_saida

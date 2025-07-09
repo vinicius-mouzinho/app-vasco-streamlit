@@ -1,6 +1,7 @@
 # dados/carregar_dados.py
 
 import pandas as pd
+import streamlit as st
 import numpy as np
 
 def normalizar_posicoes(df):
@@ -27,6 +28,7 @@ def converter_colunas_numericas(df):
                 pass
     return df
 
+@st.cache_data
 def carregar_e_tratar_dados(path_principal, path_auxiliar=None):
     df = pd.read_excel(path_principal)
     df = converter_colunas_numericas(df)

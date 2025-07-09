@@ -49,10 +49,8 @@ def aplicar_filtros_basicos(df):
                     ]
                     filtros_aplicados['País'] = pais_filtro
 
-        # Padronizar nome da coluna de equipe, se necessário
         if 'Equipa dentro de um período de tempo seleccionado' in df.columns:
-            df['Equipa'] = df['Equipa dentro de um período de tempo seleccionado']
-            df.drop(columns=['Equipa dentro de um período de tempo seleccionado'], inplace=True)
+            df['Equipe na liga analisada'] = df['Equipa dentro de um período de tempo seleccionado']
 
         # Padronizar coluna de posição
         coluna_posicao_original = 'Pos.' if 'Pos.' in df.columns else 'Posição'

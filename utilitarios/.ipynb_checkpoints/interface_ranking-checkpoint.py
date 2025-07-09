@@ -31,11 +31,11 @@ PERFIS_PRE_DEFINIDOS = {
         'Assistências esperadas por 100 passes': 3.0,
         'Perdas de bola a cada 100 ações': -2.0
     },
-    "Extremo de força": {
-        'Acelerações/90': 0.75,
-        'Corridas progressivas/90': 1.25,
-        'Frequência no drible (%)': 1.5,
-        'Dribles com sucesso, %': 1.5,
+    "Extremo driblador": {
+        'Acelerações/90': 0.5,
+        'Corridas progressivas/90': 1.0,
+        'Frequência no drible (%)': 1.75,
+        'Dribles com sucesso, %': 1.75,
         'Golos sem ser por penálti/90': 1.25,
         'Gols esperados (sem pênaltis)/90': 1.25,
         'Assistências esperadas por 100 passes': 2.5,
@@ -107,6 +107,7 @@ def exibir_ranking_por_perfil(df):
                     else:
                         df_ranking['Percentil'] = df_ranking['Z-Score'].rank(pct=True) * 100
 
+                    st.session_state["metricas_selecionadas"] = metricas_selecionadas
                     st.session_state["df_ranking_gerado"] = df_ranking
                     st.session_state["ajuste_liga"] = ajustar_por_liga
                     st.session_state["perfil_selecionado"] = perfil_selecionado
@@ -159,7 +160,8 @@ def exibir_ranking_por_perfil(df):
             df_exibir['Valor de mercado'] = df_exibir['Valor de mercado'].apply(formatar_valor)
         
         # 🔲 Gradiente personalizado para métricas do perfil
-        metricas_para_gradiente = [m for m in metricas_selecionadas if m in df_exibir.columns]
+        metricas_para_gradiente = st.session_state.get("metricas_selecionadas", [])
+        metricas_para_gradiente = [m for m in metricas_para_gradiente if m in df_exibir.columns]
         style = df_exibir.style
 
         # Definir colunas Z/P

@@ -13,7 +13,7 @@ COLUNAS_FIXAS = [
 TIPOS_TABELA = {
     "Finalização": [
         "Golos", "Golos/90", "Golos sem ser por penálti", "Golos sem ser por penálti/90",
-        "Golos esperados", "Golos esperados/90", "Golos de cabeça", "Golos de cabeça/90",
+        "Golos esperados", "Golos esperados/90", "Gols esperados (sem pênaltis)/90", "Golos de cabeça", "Golos de cabeça/90",
         "Remate", "Remates/90", "Remates à baliza/90", "Remates à baliza, %",
         "Golos marcados, %", "Toques na área/90", "Penaltis marcados", "Conversão de pênaltis, %"
     ],
@@ -32,6 +32,11 @@ TIPOS_TABELA = {
         "Passes para terço final/90", "Passes certos para terço final, %",
         "Passes progressivos/90", "Passes progressivos certos, %",
         "Passes recebidos/90", "Perdas de bola/90", "Perdas de bola a cada 100 ações"
+    ],
+    "Drible e 1x1": [
+        "Dribles/90", "Dribles com sucesso, %", "Dribles certos/ 90", "Frequência no drible (%)",
+        "Acelerações/90", "Corridas progressivas/90", "Duelos ofensivos/90", "Duelos ofensivos ganhos, %",
+        "Toques na área/90"
     ]
 }
 

@@ -1,6 +1,8 @@
 import pandas as pd
 import os
+import streamlit as st
 
+@st.cache_data
 def unificar_dataframes(pasta="dataframes"):
     arquivos = [arq for arq in os.listdir(pasta) if arq.endswith(('.xlsx', '.csv', '.pkl'))]
     lista_df = []

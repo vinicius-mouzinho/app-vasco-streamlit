@@ -1,12 +1,15 @@
+# app.py
+
 import streamlit as st
 import os
 import pandas as pd
-from dados.carregar_df_streamlit import carregar_df
+from dados.carregar_df_streamlit import carregar_df, listar_arquivos_sem_extensao
 from seguranca.autenticacao import criar_autenticador
 from dados.unificar_dataframes import unificar_dataframes
 from utilitarios.filtros import aplicar_filtros_basicos
 from utilitarios.interface_ranking import exibir_ranking_por_perfil
 from utilitarios.estruturas_tabela import selecionar_colunas
+from paginas.relatorio_individual import exibir_pagina_relatorio_individual
 from paginas.comparador import exibir_comparador
 
 st.set_page_config(page_title="Scout Vasco - App de Análise de Dados", layout="wide")
@@ -32,28 +35,29 @@ if autenticado:
         )
     )
 
-    # Arquivos disponíveis
-    PASTA_DATAFRAMES = "dataframes"
-    arquivos_disponiveis = sorted([
-        arq for arq in os.listdir(PASTA_DATAFRAMES)
-        if arq.endswith(('.xlsx', '.csv', '.pkl'))
-    ])
+    # Mapeamento: nomes limpos -> nomes reais
+    mapa_arquivos = listar_arquivos_sem_extensao()
+    nomes_limpos = list(mapa_arquivos.keys())
 
-    # Sessão para manter arquivo selecionado
+    # Define o padrão
     if "arquivo_atual" not in st.session_state:
-        st.session_state.arquivo_atual = arquivos_disponiveis[0]
+        st.session_state.arquivo_atual = "Todos os jogadores.pkl"
 
-    arquivo_selecionado = st.selectbox(
+    nome_limpo_atual = os.path.splitext(st.session_state.arquivo_atual)[0]
+
+    nome_escolhido = st.selectbox(
         "Selecione um DataFrame:",
-        arquivos_disponiveis,
-        index=arquivos_disponiveis.index(st.session_state.arquivo_atual)
+        nomes_limpos,
+        index=nomes_limpos.index(nome_limpo_atual) if nome_limpo_atual in nomes_limpos else 0
     )
 
-    # Recarrega DataFrame só se mudar o arquivo
+    # Atualiza session_state e recarrega cache
+    arquivo_selecionado = mapa_arquivos[nome_escolhido]
     if arquivo_selecionado != st.session_state.arquivo_atual:
         st.session_state.arquivo_atual = arquivo_selecionado
         st.cache_data.clear()
 
+    # Carrega o DataFrame
     df = carregar_df(st.session_state.arquivo_atual)
     df_filtrado, filtros_aplicados = aplicar_filtros_basicos(df)
 
@@ -66,7 +70,7 @@ if autenticado:
 
         tipo_tabela = st.selectbox(
             "Selecione o tipo de tabela:",
-            ["Completa", "Finalização", "Último Passe", "Construção de jogo"]
+            ["Completa", "Finalização", "Último Passe", "Construção de jogo", "Drible e 1x1"]
         )
 
         df_tabela = selecionar_colunas(df_filtrado, tipo_tabela)
@@ -74,45 +78,7 @@ if autenticado:
 
     # Aba 2: Relatório Individual
     elif aba_selecionada == "Relatório Individual":
-        st.header("📄 Gerar Relatório Individual")
-
-        jogadores = sorted(df_filtrado['Jogador'].dropna().unique())
-        jogador_selecionado = st.selectbox("Escolha o jogador para gerar o relatório:", jogadores)
-
-        coluna_posicao = 'Pos.' if 'Pos.' in df_filtrado.columns else 'Posição'
-        posicoes = sorted(df_filtrado[coluna_posicao].dropna().unique())
-        posicao_selecionada = st.selectbox("Selecione a posição do jogador:", posicoes)
-
-        if st.button("Gerar Relatório PDF"):
-            from main import gerar_relatorio_dados
-
-            equipa = df_filtrado[df_filtrado['Jogador'] == jogador_selecionado]['Equipa'].values[0]
-            df_auxiliar = df_filtrado[df_filtrado['Jogador'] == jogador_selecionado].copy()
-            df_auxiliar[coluna_posicao] = posicao_selecionada
-
-            caminho_pdf = gerar_relatorio_dados(
-                df=df_filtrado,
-                jogador=jogador_selecionado,
-                equipa=equipa,
-                posicao=posicao_selecionada,
-                df_auxiliar=df_auxiliar,
-                texto_conclusao=None,
-                resumo_desempenho=None,
-                exportar_pdf=True,
-                nome_arquivo_df=st.session_state.arquivo_atual
-            )
-
-            if caminho_pdf and os.path.exists(caminho_pdf):
-                st.success(f"✅ Relatório de {jogador_selecionado} gerado com sucesso!")
-                with open(caminho_pdf, "rb") as f:
-                    st.download_button(
-                        label="📥 Baixar PDF do Relatório",
-                        data=f,
-                        file_name=os.path.basename(caminho_pdf),
-                        mime="application/pdf"
-                    )
-            else:
-                st.error("❌ O relatório não pôde ser gerado. Verifique os dados disponíveis.")
+        exibir_pagina_relatorio_individual()
 
     # Aba 3: Ranking por Perfil
     elif aba_selecionada == "Ranking por Perfil":
@@ -126,4 +92,3 @@ if autenticado:
     elif aba_selecionada == "Gráfico de Dispersão":
         from paginas.dispersao import exibir_grafico_dispersao
         exibir_grafico_dispersao(df_filtrado)
-        

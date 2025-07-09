@@ -1,27 +1,19 @@
+# dados/carregar_df_streamlit
+
 import os
 import pandas as pd
 from utilitarios.funcoes_metricas import adicionar_metricas_derivadas
 from dados.carregar_dados import normalizar_posicoes
+import streamlit as st
 
 CAMINHO_PADRAO = "dataframes"
 
+@st.cache_data
 def carregar_df(nome_arquivo):
     caminho = os.path.join(CAMINHO_PADRAO, nome_arquivo)
-    
+
     if nome_arquivo.endswith('.pkl'):
         df = pd.read_pickle(caminho)
-        df = df.copy()
-        df.reset_index(drop=True, inplace=True)
-
-        for col in df.columns:
-            if isinstance(df[col].dtype, pd.CategoricalDtype):
-                df[col] = df[col].astype(str)
-            elif df[col].dtype == object:
-                try:
-                    df[col] = pd.to_numeric(df[col], errors='ignore')
-                except Exception:
-                    pass
-
     elif nome_arquivo.endswith('.csv'):
         df = pd.read_csv(caminho)
     elif nome_arquivo.endswith('.xlsx'):
@@ -29,11 +21,13 @@ def carregar_df(nome_arquivo):
     else:
         raise ValueError("Formato de arquivo não suportado.")
 
-    # Adicionar coluna 'Liga' com base no nome do arquivo (sem extensão)
-    if 'Liga' not in df.columns:
+    # Garante que a coluna 'Liga' existe e não sobrescreve se já estiver correta
+    if 'Liga' not in df.columns or df['Liga'].isnull().all():
         nome_liga = os.path.splitext(nome_arquivo)[0]
         df['Liga'] = nome_liga
 
+    if 'Equipa dentro de um período de tempo seleccionado' in df.columns:
+        df['Equipe na liga analisada'] = df['Equipa dentro de um período de tempo seleccionado']
 
     # Remover coluna antiga se existir
     if 'Arquivo_Origem' in df.columns:
@@ -41,4 +35,12 @@ def carregar_df(nome_arquivo):
 
     df = normalizar_posicoes(df)
     df = adicionar_metricas_derivadas(df)
+
     return df
+
+def listar_arquivos_sem_extensao(pasta=CAMINHO_PADRAO):
+    arquivos = sorted([
+        arq for arq in os.listdir(pasta)
+        if arq.endswith(('.xlsx', '.csv', '.pkl'))
+    ])
+    return {os.path.splitext(arq)[0]: arq for arq in arquivos}

@@ -51,14 +51,14 @@ PARES_METRICAS_POR_POSICAO = {
         ("Passes progressivos/90", "Passes para a área de penálti/90", "Infiltração com Passes"),
     ],
     "LW": [
-        ("Dribles/90", "Frequência no drible (%)", "Agressividade no 1v1"),
-        ("Corridas progressivas/90", "Toques na área/90", "Progressão e Presença"),
+        ("Frequência no drible (%)", "Dribles com sucesso, %", "Agressividade e eficiência no 1v1"),
+        ("Corridas progressivas/90", "Toques na área/90", "Condução progressiva e Presença na área"),
         ("Assistências/90", "Cruzamentos certos, %", "Serviço e Entrega"),
         ("Golos sem ser por penálti/90", "Remates à baliza/90", "Finalização e Objetividade"),
         ("Passes para a área de penálti/90", "Assistências esperadas/90", "Criação na Área"),
     ],
     "RW": [
-        ("Dribles/90", "Frequência no drible (%)", "Iniciativa Ofensiva Direita"),
+        ("Frequência no drible (%)", "Dribles com sucesso, %", "Agressividade e eficiência no 1v1"),
         ("Golos sem ser por penálti/90", "Assistências/90", "Decisivo no Terço Final"),
         ("Cruzamentos/90", "Cruzamentos certos, %", "Eficiência nos Cruzamentos"),
         ("Passes chave/90", "Assistências esperadas por 100 passes", "Criação de Chances"),
@@ -86,8 +86,6 @@ def exibir_grafico_dispersao(df):
         st.warning("Não há métricas numéricas suficientes no DataFrame.")
         return
 
-    jogador_destaque = st.selectbox("🔍 Jogador em destaque (opcional)", ["Nenhum"] + sorted(df["Jogador"].dropna().unique()))
-
     modo = st.radio("Escolha o modo de visualização:", ["Pré-definido por posição", "Manual"])
 
     if modo == "Pré-definido por posição":
@@ -105,24 +103,54 @@ def exibir_grafico_dispersao(df):
             eixo_y = st.selectbox("📉 Eixo Y", metricas_numericas)
         nome_selecionado = f"{eixo_y} vs {eixo_x}"
 
+    # Opções visuais
+    exibir_nome_vasco = st.checkbox("Exibir nome dos jogadores do Vasco (em azul)", value=True)
+    exibir_nome_outros = st.checkbox("Exibir nome de todos os jogadores (em marrom)", value=False)
+
     df_plot = df.copy()
 
+    # Criar nome expandido para exibição
+    df_plot["JogadorExpandido"] = df_plot.apply(
+        lambda row: f"{row['Jogador']} ({row['Equipa']}) ({row['Liga']})", axis=1
+    )
+    mapa_jogador_expandido = dict(zip(df_plot["JogadorExpandido"], df_plot["Jogador"]))
+
+    jogadores_expandidos = st.multiselect(
+        "🔍 Jogadores em destaque (nome + time + liga)",
+        sorted(df_plot["JogadorExpandido"].dropna().unique())
+    )
+    jogadores_destaque = [mapa_jogador_expandido[nome] for nome in jogadores_expandidos]
+
     def grupo(row):
-        if row["Jogador"] == jogador_destaque:
+        if row["Jogador"] in jogadores_destaque:
             return "Jogador Selecionado"
         elif "vasco" in str(row.get("Equipa", "")).lower():
             return "Jogador do Vasco"
         else:
             return "Outros"
-
+    
     df_plot["Grupo"] = df_plot.apply(grupo, axis=1)
-    df_plot["Label"] = df_plot["Jogador"]
-
+    
+    # Definir quando o nome aparece
+    def label(row):
+        if row["Grupo"] == "Jogador Selecionado":
+            return row["Jogador"]
+        elif row["Grupo"] == "Jogador do Vasco" and exibir_nome_vasco:
+            return row["Jogador"]
+        elif row["Grupo"] == "Outros" and exibir_nome_outros:
+            return row["Jogador"]
+        else:
+            return ""
+    
+    df_plot["Label"] = df_plot.apply(label, axis=1)
+    
+    # Definir cores de acordo com visibilidade
     color_map = {
         "Jogador Selecionado": "darkorange",
-        "Jogador do Vasco": "royalblue",
-        "Outros": "saddlebrown"
+        "Jogador do Vasco": "royalblue" if exibir_nome_vasco else "gray",
+        "Outros": "saddlebrown" if exibir_nome_outros else "lightgray"
     }
+
 
     fig = px.scatter(
         df_plot,

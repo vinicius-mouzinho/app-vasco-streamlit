@@ -7,11 +7,15 @@ from utilitarios.funcoes_pdf import gerar_pdf_jogador
 from utilitarios.constantes import metricas_traduzidas
 import pandas as pd
 from dados.carregar_dados import normalizar_posicoes
-
+from utilitarios.funcoes_metricas import adicionar_metricas_derivadas
+from utilitarios.funcoes_grafico import gerar_grafico_radar
+import tempfile
 import os
+import streamlit as st
 
 def gerar_relatorio_dados(
-    df, jogador, equipa, posicao,
+    df, jogador, equipa, posicao=None,
+    liga=None,
     nome_arquivo_df=None,
     df_auxiliar=None,
     img_perfil_analitico=None,
@@ -29,79 +33,119 @@ def gerar_relatorio_dados(
     imagens = []
 
     coluna_posicao = 'Pos.' if 'Pos.' in df.columns else 'Posição'
+    col_equipe = "Equipe na liga analisada" if "Equipe na liga analisada" in df.columns else "Equipa"
+    df = normalizar_posicoes(df)
+
     # Limpar a coluna de posição: manter apenas a primeira, se houver múltiplas
     df[coluna_posicao] = df[coluna_posicao].astype(str).apply(lambda x: x.split(",")[0].strip())
+
+    # Detectar posição automaticamente se não for passada
+    if posicao is None:
+        try:
+            linha = df[(df["Jogador"] == jogador) & (df[col_equipe] == equipa)].iloc[0]
+            posicao = linha["Posição"] if "Posição" in linha else linha.get("Pos.")
+            posicao = str(posicao).split(",")[0].strip()
+        except IndexError:
+            print(f"[ERRO] Não foi possível identificar a posição do jogador '{jogador}' da equipe '{equipa}'.")
+            return None
+
     # ✅ Carregar DataFrame da Liga BRA 2025.xlsx para os gráficos comparativos
     caminho_df_liga = os.path.join("dataframes", "Brasil 2024.xlsx")
     df_liga = pd.read_excel(caminho_df_liga)
+
     df_liga = normalizar_posicoes(df_liga)
     df_vasco = df_liga[df_liga['Equipa'].str.contains("Vasco", case=False, na=False)].copy()
     df_liga[coluna_posicao] = df_liga[coluna_posicao].astype(str).apply(lambda x: x.split(",")[0].strip())
-    # === Adicionar métricas derivadas ao df_liga ===
-    df_liga['Ações com a bola'] = df_liga['Passes/90'] + df_liga['Cruzamentos/90'] + df_liga['Dribles/90'] + df_liga['Remates/90']
-    df_liga['Possession Adjustment'] = df_liga['Interceções ajust. à posse'] / df_liga['Interseções/90']
-    df_liga['Ações Defensivas por 30\' de Posse Adversária'] = df_liga['Ações defensivas com êxito/90'] * df_liga['Possession Adjustment']
-    df_liga['Dribles certos/ 90'] = df_liga['Dribles/90'] * df_liga['Dribles com sucesso, %'] / 100
-    df_liga['Duelos Defensivos por 30\' de Posse Adversária'] = df_liga['Duelos defensivos/90'] * df_liga['Possession Adjustment']
-    df_liga['Passes precisos para a área de penalti/90'] = df_liga['Passes para a área de penálti/90'] * df_liga['Passes precisos para a área de penálti, %'] / 100
-    df_liga['Passes progressivos certos/90'] = df_liga['Passes progressivos/90'] * df_liga['Passes progressivos certos, %'] / 100
-    df_liga['Passes progressivos fora da área/90'] = df_liga['Passes progressivos certos/90'] - df_liga['Passes precisos para a área de penalti/90']
-    df_liga['Remates à baliza/90'] = df_liga['Remates/90'] * df_liga['Remates à baliza, %'] / 100
-    df_liga['Perdas de bola'] = (
-        (df_liga['Passes/90'] * (100 - df_liga['Passes certos, %']) / 100) +
-        (df_liga['Dribles/90'] * (100 - df_liga['Dribles com sucesso, %']) / 100) +
-        (df_liga['Remates/90'] * (100 - df_liga['Remates à baliza, %']) / 100) +
-        (df_liga['Cruzamentos/90'] * (100 - df_liga['Cruzamentos certos, %']) / 100)
-    )
-    df_liga['Frequência no drible (%)'] = 100 * df_liga['Dribles/90'] / df_liga['Ações com a bola']
-    from utilitarios.funcoes_grafico import obter_grupo_posicao
+    df_liga = adicionar_metricas_derivadas(df_liga)
 
+    from utilitarios.funcoes_grafico import obter_grupo_posicao
     grupo_posicao = obter_grupo_posicao(df_liga, posicao)
-    
+
     # garante q jogadores do Vasco tb estão no grupo
     vasco_mesma_posicao = obter_grupo_posicao(df_vasco, posicao)
     grupo_posicao = pd.concat([grupo_posicao, vasco_mesma_posicao], ignore_index=True).drop_duplicates(subset=["Jogador", "Equipa"])
 
-    
     if df_auxiliar is not None:
+        df_auxiliar = adicionar_metricas_derivadas(df_auxiliar)
         if 'Posição' in df_auxiliar.columns:
             grupo_aux = df_auxiliar[df_auxiliar['Posição'] == posicao]
         elif 'Pos.' in df_auxiliar.columns:
             grupo_aux = df_auxiliar[df_auxiliar['Pos.'] == posicao]
         else:
-            grupo_aux = pd.DataFrame()  # vazio se não encontrar coluna válida
-    
-        grupo_posicao = pd.concat([grupo_posicao, grupo_aux])
+            grupo_aux = pd.DataFrame()
+        grupo_posicao = pd.concat([grupo_posicao, grupo_aux], ignore_index=True)
 
-    if df_auxiliar is not None:
-        # === Adicionar métricas derivadas ao df_auxiliar ===
-        df_auxiliar['Ações com a bola'] = df_auxiliar['Passes/90'] + df_auxiliar['Cruzamentos/90'] + df_auxiliar['Dribles/90'] + df_auxiliar['Remates/90']
-        df_auxiliar['Possession Adjustment'] = df_auxiliar['Interceções ajust. à posse'] / df_auxiliar['Interseções/90']
-        df_auxiliar['Ações Defensivas por 30\' de Posse Adversária'] = df_auxiliar['Ações defensivas com êxito/90'] * df_auxiliar['Possession Adjustment']
-        df_auxiliar['Dribles certos/ 90'] = df_auxiliar['Dribles/90'] * df_auxiliar['Dribles com sucesso, %'] / 100
-        df_auxiliar['Duelos Defensivos por 30\' de Posse Adversária'] = df_auxiliar['Duelos defensivos/90'] * df_auxiliar['Possession Adjustment']
-        df_auxiliar['Passes precisos para a área de penalti/90'] = df_auxiliar['Passes para a área de penálti/90'] * df_auxiliar['Passes precisos para a área de penálti, %'] / 100
-        df_auxiliar['Passes progressivos certos/90'] = df_auxiliar['Passes progressivos/90'] * df_auxiliar['Passes progressivos certos, %'] / 100
-        df_auxiliar['Passes progressivos fora da área/90'] = df_auxiliar['Passes progressivos certos/90'] - df_auxiliar['Passes precisos para a área de penalti/90']
-        df_auxiliar['Remates à baliza/90'] = df_auxiliar['Remates/90'] * df_auxiliar['Remates à baliza, %'] / 100
-        df_auxiliar['Perdas de bola'] = (
-            (df_auxiliar['Passes/90'] * (100 - df_auxiliar['Passes certos, %']) / 100) +
-            (df_auxiliar['Dribles/90'] * (100 - df_auxiliar['Dribles com sucesso, %']) / 100) +
-            (df_auxiliar['Remates/90'] * (100 - df_auxiliar['Remates à baliza, %']) / 100) +
-            (df_auxiliar['Cruzamentos/90'] * (100 - df_auxiliar['Cruzamentos certos, %']) / 100)
+    # Buscar a liga no DataFrame, se ela ainda não foi passada
+    if liga is None:
+        if "Liga" in df.columns:
+            liga_series = df[(df["Jogador"] == jogador) & (df[col_equipe] == equipa)]["Liga"]
+            liga = liga_series.iloc[0] if not liga_series.empty else "Liga não especificada"
+        else:
+            liga = "Liga não especificada"
+
+    # Garantir que a coluna "Liga" esteja presente no grupo_posicao
+    if "Liga" not in grupo_posicao.columns and "Liga" in df.columns:
+        grupo_posicao = pd.merge(
+            grupo_posicao,
+            df[["Jogador", "Equipa", "Liga"]],
+            on=["Jogador", "Equipa"],
+            how="left"
         )
-        df_auxiliar['Frequência no drible (%)'] = 100 * df_auxiliar['Dribles/90'] / df_auxiliar['Ações com a bola']
-        grupo_posicao = pd.concat([grupo_posicao, df_auxiliar[df_auxiliar['Posição'] == posicao]])
 
-    jogador_df = grupo_posicao[grupo_posicao["Jogador"] == jogador]
+    # Buscar o jogador no df original, e não no grupo de comparação
+    jogador_df = df[
+        (df["Jogador"] == jogador) &
+        (df[col_equipe] == equipa)
+    ]
+    
+    # Apenas checar se bate com a liga selecionada (opcional)
+    if "Liga" in df.columns and liga:
+        jogador_df = jogador_df[jogador_df["Liga"] == liga]
+
+    # Verifica se encontrou os dados do jogador
+    if jogador_df.empty:
+        st.error(f"❌ Nenhum dado encontrado para **{jogador}** ({equipa}) na liga: {liga}")
+        st.info("🔍 Dados disponíveis no grupo filtrado (debug):")
+        st.dataframe(grupo_posicao[(grupo_posicao["Jogador"] == jogador)])
+        return None
     
     jogador_dados = jogador_df.iloc[0]
-    if nome_arquivo_df:
-        partes = nome_arquivo_df.replace(".xlsx", "").replace(".csv", "").replace(".pkl", "").split()
-        liga = " ".join(partes[:2])  # Exemplo: 'Liga ARG'
-    else:
-        liga = liga  # mantém o que foi passado
-    
+
+    # DEBUG: verificar por que jogador_df está vazio
+    print("🔎 DEBUG - Checando filtros para encontrar o jogador no grupo_posicao")
+    print("Jogador:", jogador)
+    print("Equipa:", equipa)
+    print("Liga:", liga)
+    print("grupo_posicao.columns:", grupo_posicao.columns.tolist())
+    print("Entradas encontradas para jogador e equipa:")
+    print(grupo_posicao[(grupo_posicao["Jogador"] == jogador) & (grupo_posicao["Equipa"] == equipa)])
+    print("Entradas com jogador + equipa + liga:")
+    print(grupo_posicao[
+        (grupo_posicao["Jogador"] == jogador) &
+        (grupo_posicao["Equipa"] == equipa) &
+        (grupo_posicao["Liga"] == liga)
+    ])
+
+    jogador_dados = jogador_df.iloc[0]
+
+    radar_temp = tempfile.mktemp(suffix=".png")
+
+    vasco_posicao = df_vasco[df_vasco['Posição'] == posicao]
+    jogador_comparado = None
+    if not vasco_posicao.empty:
+        jogador_comparado = vasco_posicao.sort_values(by="Minutos jogados:", ascending=False).iloc[0]["Jogador"]
+
+    gerar_grafico_radar(
+        jogador_df=jogador_df,
+        grupo_posicao=grupo_posicao,
+        posicao=posicao,
+        jogador=jogador,
+        nome_arquivo_radar=radar_temp,
+        jogador_comparado=jogador_comparado
+    )
+
+    radar_path = radar_temp
+
     desc_texto = f"{jogador} é um jogador do {equipa} atuando pela {liga}. "
     minutos = int(jogador_dados.get("Minutos jogados:", 0))
     minutagem_em_partidas = round(minutos / 90, 1)
@@ -114,22 +158,18 @@ def gerar_relatorio_dados(
     contrato = jogador_dados.get("Contrato termina")
     contrato = contrato if pd.notna(contrato) else "não informado"
     valor_bruto = jogador_dados.get("Valor de mercado", 0)
-    
+
     try:
         valor_milhoes = float(valor_bruto) / 1_000_000
         valor_formatado = f"€{valor_milhoes:.1f}M"
     except:
         valor_formatado = "não informado"
-    
+
     desc_texto += f"Dentro dessa temporada, possui {minutos} minutos jogados ({minutagem_em_partidas} jogos), participando de {gols} gols e {assist} assistências. "
     desc_texto += f"Tem {idade} anos, {altura}cm de altura, nasceu no(a) {naturalidade} e seu pé dominante é o {pe}. "
     desc_texto += f"Seu contrato se encerra em {contrato}, e o atleta tem valor de mercado de {valor_formatado}, segundo a Transfermarkt."
-    
-    descricao_inicial = desc_texto
 
-    if jogador_df.empty:
-        print(f"Jogador {jogador} não encontrado na posição {posicao}.")
-        return None
+    descricao_inicial = desc_texto
 
     pontos_fortes = []
     pontos_fracos = []
@@ -147,8 +187,6 @@ def gerar_relatorio_dados(
             "pontos_fracos": [metricas_traduzidas.get(m, m) for m in pontos_fracos]
         }
 
-    radar_path = None  # Aqui você pode inserir o caminho do radar gerado, se quiser
-
     if exportar_pdf:
         caminho_saida = os.path.join(os.getcwd(), f"{jogador.replace(' ', '_')}_relatorio.pdf")
         gerar_pdf_jogador(
@@ -158,13 +196,13 @@ def gerar_relatorio_dados(
             liga=liga,
             textos=textos,
             imagens=imagens,
-            radar_path=radar_path,
             texto_conclusao=texto_conclusao,
             resumo_desempenho=resumo_desempenho,
             comparacao_contextual_bs=comparacao_contextual_bs,
             comparacao_vasco_bs=comparacao_vasco_bs,
             caminho_saida=caminho_saida,
-            descricao_inicial=descricao_inicial
+            descricao_inicial=descricao_inicial,
+            radar_path_final = radar_path
         )
         print(f"Relatório salvo em: {caminho_saida}")
-        return caminho_saida 
+        return caminho_saida
