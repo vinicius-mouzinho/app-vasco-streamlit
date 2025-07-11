@@ -13,6 +13,26 @@ def normalizar_posicoes(df):
             return "RW"
         if "LAMF" in pos:
             return "LW"
+        if "RDMF" in pos:
+            return "DMF"
+        if "LDMF" in pos:
+            return "DMF"
+        if "LCMF" in pos:
+            return "CMF"
+        if "RCMF" in pos:
+            return "CMF"
+        if "LWB" in pos:
+            return "LB"
+        if "RWB" in pos:
+            return "RB"
+        if "LWF" in pos:
+            return "LW"
+        if "RWF" in pos:
+            return "RW"
+        if "RCB" in pos:
+            return "CB"
+        if "LCB" in pos:
+            return "CB"
         return pos.split(",")[0].strip()  # mantém só a primeira posição
     if "Posição" in df.columns:
         df["Posição"] = df["Posição"].apply(limpar_posicao)

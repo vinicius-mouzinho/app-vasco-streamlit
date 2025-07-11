@@ -12,7 +12,7 @@ COLUNAS_FIXAS = [
 
 # Colunas que devem sempre ficar fixas no início da tabela (usadas para ordenação visual)
 COLUNAS_FIXAS_VISUAL = [
-    "Jogador", "Posição", "Equipa", "Equipa na liga analisada", "Idade", "Liga"
+    "Jogador", "Posição", "Equipa", "Equipa na liga analisada", "Idade", "Liga", "Minutos jogados:", "País de nacionalidade"
 ]
 
 # Categorias de métricas por tipo de tabela

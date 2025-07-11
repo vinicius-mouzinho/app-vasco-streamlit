@@ -1,5 +1,3 @@
-# utilitarios/interpretacoes.py
-
 import os
 import tempfile
 import numpy as np
@@ -58,6 +56,16 @@ def gerar_paragrafo_com_grafico(
     df_vasco=None
 ):
     def exibir_grafico_dispersao(df_plot, metrica_x, metrica_y, jogador, equipa, nome_arquivo=None):
+        # Garante que o jogador analisado está no df_plot
+        if not ((df_plot['Jogador'] == jogador) & (df_plot['Equipa'] == equipa)).any():
+            print(f"🔧 Adicionando jogador {jogador} manualmente ao grupo_posicao")
+            nova_linha = pd.DataFrame(columns=df_plot.columns)
+            nova_linha.loc[0] = [np.nan] * len(df_plot.columns)
+            nova_linha.at[0, 'Jogador'] = jogador
+            nova_linha.at[0, 'Equipa'] = equipa
+            df_plot = pd.concat([df_plot, nova_linha], ignore_index=True)
+            df_plot = df_plot.drop_duplicates(subset=["Jogador", "Equipa"])
+
         fig, ax = plt.subplots(figsize=(6, 5))
         outros = df_plot[(df_plot['Equipa'] != 'Vasco da Gama') & ~(df_plot['Jogador'] == jogador)]
         vasco = df_vasco if df_vasco is not None else df_plot[df_plot['Equipa'].str.contains("Vasco", case=False, na=False)]

@@ -111,23 +111,6 @@ def gerar_relatorio_dados(
     
     jogador_dados = jogador_df.iloc[0]
 
-    # DEBUG: verificar por que jogador_df está vazio
-    print("🔎 DEBUG - Checando filtros para encontrar o jogador no grupo_posicao")
-    print("Jogador:", jogador)
-    print("Equipa:", equipa)
-    print("Liga:", liga)
-    print("grupo_posicao.columns:", grupo_posicao.columns.tolist())
-    print("Entradas encontradas para jogador e equipa:")
-    print(grupo_posicao[(grupo_posicao["Jogador"] == jogador) & (grupo_posicao["Equipa"] == equipa)])
-    print("Entradas com jogador + equipa + liga:")
-    print(grupo_posicao[
-        (grupo_posicao["Jogador"] == jogador) &
-        (grupo_posicao["Equipa"] == equipa) &
-        (grupo_posicao["Liga"] == liga)
-    ])
-
-    jogador_dados = jogador_df.iloc[0]
-
     radar_temp = tempfile.mktemp(suffix=".png")
 
     vasco_posicao = df_vasco[df_vasco['Posição'] == posicao]

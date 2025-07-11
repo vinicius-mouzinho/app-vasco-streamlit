@@ -431,8 +431,8 @@ posicoes_formatadas = {
     "RB": "Lateral-direito",
     "LB": "Lateral-esquerdo",
     "CB": "Zagueiro",
-    "RCB": "Zagueiro",
-    "LCB": "Zagueiro"
+    "RCB": "Zagueiro pela direita",
+    "LCB": "Zagueiro pela esquerda"
 }
 
 # utilitarios/constantes.py
