@@ -14,7 +14,6 @@ def normalizar_posicoes(df):
         if "LAMF" in pos:
             return "LW"
         return pos.split(",")[0].strip()  # mantém só a primeira posição
-
     if "Posição" in df.columns:
         df["Posição"] = df["Posição"].apply(limpar_posicao)
     return df

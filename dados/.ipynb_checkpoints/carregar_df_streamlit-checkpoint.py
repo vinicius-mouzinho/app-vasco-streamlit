@@ -21,15 +21,15 @@ def carregar_df(nome_arquivo):
     else:
         raise ValueError("Formato de arquivo não suportado.")
 
-    df = normalizar_posicoes(df)
-
     # Garante que a coluna 'Liga' existe e não sobrescreve se já estiver correta
     if 'Liga' not in df.columns or df['Liga'].isnull().all():
         nome_liga = os.path.splitext(nome_arquivo)[0]
         df['Liga'] = nome_liga
 
-    if 'Equipa dentro de um período de tempo seleccionado' in df.columns:
-        df['Equipe na liga analisada'] = df['Equipa dentro de um período de tempo seleccionado']
+    if 'Equipa na liga analisada' in df.columns:
+        pass  # já está com o nome correto
+    elif 'Equipa dentro de um período de tempo seleccionado' in df.columns:
+        df.rename(columns={'Equipa dentro de um período de tempo seleccionado': 'Equipa na liga analisada'}, inplace=True)
 
     # Remover coluna antiga se existir
     if 'Arquivo_Origem' in df.columns:
@@ -37,6 +37,10 @@ def carregar_df(nome_arquivo):
 
     df = normalizar_posicoes(df)
     df = adicionar_metricas_derivadas(df)
+
+    # Garante que a coluna 'Idade' está como inteiro (Int64 = permite nulos)
+    if "Idade" in df.columns:
+        df["Idade"] = pd.to_numeric(df["Idade"], errors="coerce").astype("Int64")
 
     return df
 

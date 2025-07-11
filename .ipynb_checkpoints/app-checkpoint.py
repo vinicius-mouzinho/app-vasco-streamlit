@@ -11,6 +11,8 @@ from utilitarios.interface_ranking import exibir_ranking_por_perfil
 from utilitarios.estruturas_tabela import selecionar_colunas
 from paginas.relatorio_individual import exibir_pagina_relatorio_individual
 from paginas.comparador import exibir_comparador
+from utilitarios.estilo_tabela import aplicar_cor_por_percentil_por_posicao
+from utilitarios.estruturas_tabela import COLUNAS_FIXAS
 
 st.set_page_config(page_title="Scout Vasco - App de Análise de Dados", layout="wide")
 
@@ -74,7 +76,13 @@ if autenticado:
         )
 
         df_tabela = selecionar_colunas(df_filtrado, tipo_tabela)
-        st.dataframe(df_tabela, use_container_width=True)
+        colunas_metricas = [col for col in df_tabela.columns if col not in COLUNAS_FIXAS]
+        
+        if tipo_tabela != "Completa":
+            styled_df = aplicar_cor_por_percentil_por_posicao(df_tabela, colunas_metricas)
+            st.write(styled_df)
+        else:
+            st.dataframe(df_tabela, use_container_width=True, hide_index=True)
 
     # Aba 2: Relatório Individual
     elif aba_selecionada == "Relatório Individual":

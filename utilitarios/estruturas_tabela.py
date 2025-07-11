@@ -4,9 +4,15 @@
 COLUNAS_FIXAS = [
     "Jogador",
     "Equipa",
+    "Equipa na liga analisada",
     "Posição",
     "Idade",
     "Minutos jogados:"
+]
+
+# Colunas que devem sempre ficar fixas no início da tabela (usadas para ordenação visual)
+COLUNAS_FIXAS_VISUAL = [
+    "Jogador", "Posição", "Equipa", "Equipa na liga analisada", "Idade", "Liga"
 ]
 
 # Categorias de métricas por tipo de tabela
@@ -37,21 +43,43 @@ TIPOS_TABELA = {
         "Dribles/90", "Dribles com sucesso, %", "Dribles certos/ 90", "Frequência no drible (%)",
         "Acelerações/90", "Corridas progressivas/90", "Duelos ofensivos/90", "Duelos ofensivos ganhos, %",
         "Toques na área/90"
+    ],
+    "GOLEIROS": [
+    "Golos sofridos", "Golos sofridos/90", "Remates sofridos", "Remates sofridos/90",
+    "Jogos sem sofrer gols", "Defesas, %", "Golos sofridos esperados",
+    "Golos sofridos esperados/90", "Golos expectáveis defendidos", "Golos expectáveis defendidos por 90"
     ]
 }
 
-def selecionar_colunas(df, tipo_tabela):
-    """
-    Retorna um DataFrame com todas as colunas (se tipo_tabela = 'Completa'),
-    ou com as colunas fixas + as colunas específicas do tipo de tabela.
-    """
-    if tipo_tabela == "Completa":
-        return df  # Mostra todas as colunas do DataFrame original
 
-    if tipo_tabela not in TIPOS_TABELA:
-        return df[COLUNAS_FIXAS]
-
-    colunas_desejadas = COLUNAS_FIXAS + [
-        col for col in TIPOS_TABELA[tipo_tabela] if col in df.columns
+COLUNAS_EXCLUIR_COMPLETA = [
+        'Emprestado', 'Ações defensivas com êxito/90', 'Duelos defensivos/90',
+        'Cortes de carrinho ajust. à posse', 'Interseções/90',
+        'Cartões amarelos', 'Cartões amarelos/90', 'Cartões vermelhos', 'Cartões vermelhos/90',
+        'Acções atacantes com sucesso/90', 'Remate',
+        'Cruzamentos do flanco esquerdo/90', 'Cruzamentos precisos do flanco esquerdo, %',
+        'Cruzamentos do flanco direito/90', 'Cruzamentos precisos do flanco direito, %',
+        'Passes para trás/90', 'Passes para trás certos, %',
+        'Passes laterais/90', 'Passes laterais certos, %',
+        'Comprimento médio de passes, m', 'Comprimento médio de passes longos, m',
+        'Segundas assistências/90', 'Terceiras assistências/90', 'Passes chave/90',
+        'Receção de passes em profundidade/90', 'Cruzamentos em profundidade recebidos/90'
     ]
-    return df[colunas_desejadas]
+
+def selecionar_colunas(df, tipo_tabela):
+    if tipo_tabela == "Completa":
+        colunas_desejadas = [col for col in df.columns if col not in COLUNAS_EXCLUIR_COMPLETA]
+    elif tipo_tabela in TIPOS_TABELA:
+        colunas_desejadas = TIPOS_TABELA[tipo_tabela]
+    else:
+        colunas_desejadas = []
+
+    # Garante que as colunas fixas estão no início sem duplicar
+    colunas_existentes = [col for col in COLUNAS_FIXAS_VISUAL if col in df.columns]
+    colunas_metricas = [
+        col for col in colunas_desejadas
+        if col in df.columns and col not in colunas_existentes
+    ]
+
+    colunas_unificadas = colunas_existentes + colunas_metricas
+    return df[colunas_unificadas]
