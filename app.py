@@ -61,7 +61,7 @@ if autenticado:
 
     # Carrega o DataFrame
     df = carregar_df(st.session_state.arquivo_atual)
-    df_filtrado, filtros_aplicados = aplicar_filtros_basicos(df)
+    df_filtrado, filtros_aplicados, df_base_para_percentil = aplicar_filtros_basicos(df)
 
     st.success(f"✅ Arquivo carregado: {st.session_state.arquivo_atual}")
 
@@ -79,7 +79,8 @@ if autenticado:
         colunas_metricas = [col for col in df_tabela.columns if col not in COLUNAS_FIXAS]
         
         if tipo_tabela != "Completa":
-            styled_df = aplicar_cor_por_percentil_por_posicao(df_tabela, colunas_metricas)
+            df_base_tabela = selecionar_colunas(df_base_para_percentil, tipo_tabela)
+            styled_df = aplicar_cor_por_percentil_por_posicao(df_tabela, colunas_metricas, df_base=df_base_tabela)
             st.write(styled_df)
         else:
             st.dataframe(df_tabela, use_container_width=True, hide_index=True)

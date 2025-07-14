@@ -1,15 +1,16 @@
-# utilitarios/estilo_tabela.py
-
 import pandas as pd
 from scipy.stats import percentileofscore
 from utilitarios.estruturas_tabela import COLUNAS_FIXAS
 
-def aplicar_cor_por_percentil_por_posicao(df, colunas_metricas, coluna_posicao="Posição"):
+def aplicar_cor_por_percentil_por_posicao(df, colunas_metricas, coluna_posicao="Posição", df_base=None):
     df_colorido = df.copy()
+
+    # Usa df_base se fornecido, senão usa o próprio df
+    base_para_percentil = df_base if df_base is not None else df
 
     # Pré-calcula os percentis por posição e métrica
     percentis_dict = {}
-    for posicao, grupo in df.groupby(coluna_posicao):
+    for posicao, grupo in base_para_percentil.groupby(coluna_posicao):
         percentis_dict[posicao] = {}
         for col in colunas_metricas:
             if col in grupo.columns and pd.api.types.is_numeric_dtype(grupo[col]):
@@ -39,16 +40,16 @@ def aplicar_cor_por_percentil_por_posicao(df, colunas_metricas, coluna_posicao="
                 if percentil <= 50:
                     r = 255
                     g = int(255 * (percentil / 50))
+                    b = int(255 * (percentil / 50))
                 else:
                     r = int(255 * ((100 - percentil) / 50))
                     g = 255
+                    b = int(255 * ((100 - percentil) / 50))
 
-                estilos.append(f"background-color: rgb({r}, {g}, 100);")
+                cor = f"background-color: rgb({r}, {g}, {b}, 0.8)"
+                estilos.append(cor)
             except:
                 estilos.append("")
-
         return estilos
 
-    colunas_existentes = [col for col in COLUNAS_FIXAS + colunas_metricas if col in df.columns]
-    df_visivel = df[colunas_existentes]
-    return df_visivel.style.apply(estilo_linha, axis=1)
+    return df_colorido.style.apply(lambda row: estilo_linha(row), axis=1)
