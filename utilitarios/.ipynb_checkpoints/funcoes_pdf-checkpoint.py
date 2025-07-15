@@ -127,11 +127,20 @@ def gerar_pdf_jogador(
         story.append(Image(radar_path, width=15*cm, height=15*cm))
         story.append(Spacer(1, 12))
 
-    # Gráficos de dispersão + interpretações
-    for img, texto in zip(imagens, textos):
+    # Cada gráfico tem 3 elementos de texto: texto_1 (Paragraph), Spacer, texto_2 (Paragraph)
+    # Então para cada imagem, vamos pegar 3 textos da lista 'textos'
+    for i, img in enumerate(imagens):
         if os.path.exists(img):
             story.append(Image(img, width=15*cm, height=12*cm))
-        story.append(Paragraph(texto, TextoJustificado))
+        
+        blocos = textos[i*3:i*3+3]  # pega os 3 textos correspondentes a esse gráfico
+        
+        for bloco in blocos:
+            if isinstance(bloco, str):
+                story.append(Paragraph(bloco, TextoJustificado))
+            else:
+                story.append(bloco)
+        
         story.append(Spacer(1, 10))
 
     # Comparações

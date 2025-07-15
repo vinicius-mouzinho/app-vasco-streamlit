@@ -6,6 +6,8 @@ import textwrap
 import matplotlib.pyplot as plt
 from scipy.stats import percentileofscore
 from .constantes import metricas_traduzidas, contextos_gerais
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
 
 # Função para interpretar uma métrica individual
 def interpretar(jogador, metrica, valor, serie_comparativa, pontos_fortes, pontos_fracos, segunda=False):
@@ -66,7 +68,7 @@ def gerar_paragrafo_com_grafico(
             df_plot = pd.concat([df_plot, nova_linha], ignore_index=True)
             df_plot = df_plot.drop_duplicates(subset=["Jogador", "Equipa"])
 
-        fig, ax = plt.subplots(figsize=(6, 5))
+        fig, ax = plt.subplots(figsize=(7.5, 6))
         outros = df_plot[(df_plot['Equipa'] != 'Vasco da Gama') & ~(df_plot['Jogador'] == jogador)]
         vasco = df_vasco if df_vasco is not None else df_plot[df_plot['Equipa'].str.contains("Vasco", case=False, na=False)]
         jogador_row = df_plot[(df_plot['Jogador'] == jogador) & (df_plot['Equipa'] == equipa)]
@@ -93,7 +95,7 @@ def gerar_paragrafo_com_grafico(
             ax.invert_yaxis()
         titulo_bruto = f"{metricas_traduzidas.get(metrica_x)} vs {metricas_traduzidas.get(metrica_y)}"
         titulo_formatado = textwrap.fill(titulo_bruto, width=45)
-        ax.set_title(titulo_formatado, fontsize=11, loc='center')
+        ax.set_title(titulo_formatado, fontsize=17, loc='center')
 
         plt.tight_layout()
 
@@ -103,11 +105,24 @@ def gerar_paragrafo_com_grafico(
         else:
             plt.show()
 
-    if exportar_pdf:
+    from reportlab.platypus import Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+    
+    if exportar_pdf:        
+        estilo_normal = ParagraphStyle(
+            name="TextoGrafico",
+            fontName="Inter",
+            fontSize=12,          # estava 11
+            leading=17,           # aumenta o espaçamento entre linhas
+            alignment=TA_JUSTIFY
+        )
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
             exibir_grafico_dispersao(grupo_posicao, m1, m2, jogador, equipa, nome_arquivo=tmpfile.name)
             imagens.append(tmpfile.name)
-            textos.append(texto_1 + "\n" + texto_2)
+            textos.append(Paragraph(texto_1, estilo_normal))
+            textos.append(Spacer(1, 6))
+            textos.append(Paragraph(texto_2, estilo_normal))
+
     else:
         exibir_grafico_dispersao(grupo_posicao, m1, m2, jogador, equipa)
         print(texto_1 + "\n" + texto_2 + "\n")

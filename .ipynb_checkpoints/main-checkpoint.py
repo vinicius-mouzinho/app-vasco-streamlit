@@ -64,6 +64,10 @@ def gerar_relatorio_dados(
     # garante q jogadores do Vasco tb estão no grupo
     vasco_mesma_posicao = obter_grupo_posicao(df_vasco, posicao)
     grupo_posicao = pd.concat([grupo_posicao, vasco_mesma_posicao], ignore_index=True).drop_duplicates(subset=["Jogador", "Equipa"])
+    # Adiciona o jogador analisado se ele não estiver no grupo_posicao
+    linha_jogador = df[(df["Jogador"] == jogador) & (df[col_equipe] == equipa)]
+    if not linha_jogador.empty:
+        grupo_posicao = pd.concat([grupo_posicao, linha_jogador], ignore_index=True).drop_duplicates(subset=["Jogador", "Equipa"])
 
     if df_auxiliar is not None:
         df_auxiliar = adicionar_metricas_derivadas(df_auxiliar)

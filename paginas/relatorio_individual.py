@@ -25,7 +25,11 @@ def exibir_pagina_relatorio_individual():
 
     # 2. Selecionar a equipe com base na liga
     df_liga = df[df['Liga'] == liga].copy()
-    col_equipe_liga = 'Equipe na liga analisada' if 'Equipe na liga analisada' in df_liga.columns else 'Equipa'
+    col_equipe_liga = 'Equipa na liga analisada'
+    if col_equipe_liga not in df_liga.columns:
+        st.error("A coluna 'Equipa na liga analisada' está ausente no DataFrame. Ela é essencial para filtrar corretamente os clubes da liga.")
+        return
+
     equipas = sorted(df_liga[col_equipe_liga].dropna().unique())
     equipa = st.selectbox("Escolha a equipa:", equipas, key="select_equipa")
 
