@@ -61,8 +61,12 @@ if autenticado:
 
     # Carrega o DataFrame
     df = carregar_df(st.session_state.arquivo_atual)
-    df_filtrado, filtros_aplicados, df_base_para_percentil = aplicar_filtros_basicos(df)
-
+    if aba_selecionada == "Relatório Individual":
+        df_filtrado = df  # sem filtros
+        df_base_para_percentil = df  # mantém como referência base se necessário
+        filtros_aplicados = {}
+    else:
+        df_filtrado, filtros_aplicados, df_base_para_percentil = aplicar_filtros_basicos(df)
     st.success(f"✅ Arquivo carregado: {st.session_state.arquivo_atual}")
 
     # Aba 1: Filtros e Tabelas

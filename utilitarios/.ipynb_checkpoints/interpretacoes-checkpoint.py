@@ -68,34 +68,35 @@ def gerar_paragrafo_com_grafico(
             df_plot = pd.concat([df_plot, nova_linha], ignore_index=True)
             df_plot = df_plot.drop_duplicates(subset=["Jogador", "Equipa"])
 
-        fig, ax = plt.subplots(figsize=(7.5, 6))
+        fig, ax = plt.subplots(figsize=(11, 9))
         outros = df_plot[(df_plot['Equipa'] != 'Vasco da Gama') & ~(df_plot['Jogador'] == jogador)]
         vasco = df_vasco if df_vasco is not None else df_plot[df_plot['Equipa'].str.contains("Vasco", case=False, na=False)]
         jogador_row = df_plot[(df_plot['Jogador'] == jogador) & (df_plot['Equipa'] == equipa)]
 
-        ax.scatter(outros[metrica_x], outros[metrica_y], color='gray', alpha=0.4)
-        ax.scatter(vasco[metrica_x], vasco[metrica_y], color='blue')
+        ax.scatter(outros[metrica_x], outros[metrica_y], color='gray', alpha=0.4, s=150)
+        ax.scatter(vasco[metrica_x], vasco[metrica_y], color='blue', s=150)
         for _, row in vasco.iterrows():
-            ax.text(row[metrica_x], row[metrica_y], row['Jogador'], fontsize=8, color='blue')
+            ax.text(row[metrica_x]-0.02, row[metrica_y]+0.01, row['Jogador'], fontsize=17, color='blue')
 
         if not jogador_row.empty:
             x = jogador_row[metrica_x].values[0]
             y = jogador_row[metrica_y].values[0]
             if pd.notna(x) and pd.notna(y) and np.isfinite(x) and np.isfinite(y):
-                ax.scatter(x, y, color='orange', s=120, edgecolor='black', zorder=5)
-                ax.text(x, y, jogador, fontsize=9, weight='bold', color='orange')
+                ax.scatter(x, y, color='orange', s=150, edgecolor='black', zorder=5)
+                ax.text(x-0.02, y+0.01, jogador, fontsize=17, weight='bold', color='orange')
 
         media_x = df_plot[metrica_x].mean()
         media_y = df_plot[metrica_y].mean()
         ax.axvline(media_x, color='black', linestyle='dashed', linewidth=1)
         ax.axhline(media_y, color='black', linestyle='dashed', linewidth=1)
-        ax.set_xlabel(metricas_traduzidas.get(metrica_x, metrica_x))
-        ax.set_ylabel(metricas_traduzidas.get(metrica_y, metrica_y))
+        ax.set_xlabel(metricas_traduzidas.get(metrica_x, metrica_x), fontsize=21)
+        ax.set_ylabel(metricas_traduzidas.get(metrica_y, metrica_y), fontsize=21)
+        ax.tick_params(axis='both', labelsize=18)  # números dos eixos
         if metrica_y == "Faltas/90":
             ax.invert_yaxis()
         titulo_bruto = f"{metricas_traduzidas.get(metrica_x)} vs {metricas_traduzidas.get(metrica_y)}"
         titulo_formatado = textwrap.fill(titulo_bruto, width=45)
-        ax.set_title(titulo_formatado, fontsize=17, loc='center')
+        ax.set_title(titulo_formatado, fontsize=25, loc='center')
 
         plt.tight_layout()
 
@@ -114,7 +115,8 @@ def gerar_paragrafo_com_grafico(
             fontName="Inter",
             fontSize=12,          # estava 11
             leading=17,           # aumenta o espaçamento entre linhas
-            alignment=TA_JUSTIFY
+            alignment=TA_JUSTIFY,
+            firstLineIndent=15
         )
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
             exibir_grafico_dispersao(grupo_posicao, m1, m2, jogador, equipa, nome_arquivo=tmpfile.name)

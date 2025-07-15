@@ -50,7 +50,7 @@ def gerar_relatorio_dados(
             return None
 
     # ✅ Carregar DataFrame da Liga BRA 2025.xlsx para os gráficos comparativos
-    caminho_df_liga = os.path.join("dataframes", "Brasil 2024.xlsx")
+    caminho_df_liga = os.path.join("dataframes", "Brasil 2025.xlsx")
     df_liga = pd.read_excel(caminho_df_liga)
 
     df_liga = normalizar_posicoes(df_liga)
