@@ -6,6 +6,31 @@ from utilitarios.constantes import liga_forca
 from utilitarios.funcoes_pdf import exportar_ranking_pdf
 
 PERFIS_PRE_DEFINIDOS = {
+    
+    "Lateral Defensivo": {
+        # Contribuição Defensiva direta
+        "Ações Defensivas por 30' de Posse Adversária": 2.0,
+        "Duelos Defensivos por 30' de Posse Adversária": 2.0,
+        "Duelos defensivos ganhos, %": 2.0,
+        "Duelos aérios/90": 0.5,
+        "Duelos aéreos ganhos, %": 0.5,
+        "Faltas/90": -1.0,  # uso controlado da força
+    
+        # Controle e solidez em posse
+        "Perdas de bola a cada 100 ações": -1.0,
+        "Passes certos, %": 0.5,
+    
+        # Capacidade de construção segura
+        "Passes progressivos/90": 0.5,
+        "Passes progressivos certos, %": 0.5,
+        "Cruzamentos/90": 0.75,
+        "Cruzamentos certos, %": 0.75,
+        "Corridas progressivas/90": 1.0,
+
+        # Definição
+        'Assistências esperadas por 100 passes': 1.0
+    },
+    
     "1º Volante Construtor": {
         'Ações Defensivas por 30\' de Posse Adversária': 1.5,
         'Duelos Defensivos por 30\' de Posse Adversária': 1.5,
@@ -20,6 +45,7 @@ PERFIS_PRE_DEFINIDOS = {
         'Passes progressivos certos, %': 1.5,
         'Perdas de bola a cada 100 ações': -2.0
     },
+    
     "Meia de infiltração": {
         'Corridas progressivas/90': 1.0,
         'Passes progressivos/90': 1.0,
@@ -31,6 +57,7 @@ PERFIS_PRE_DEFINIDOS = {
         'Assistências esperadas por 100 passes': 3.0,
         'Perdas de bola a cada 100 ações': -2.0
     },
+    
     "Extremo driblador": {
         'Acelerações/90': 0.5,
         'Corridas progressivas/90': 1.0,
@@ -42,6 +69,7 @@ PERFIS_PRE_DEFINIDOS = {
         'Duelos Defensivos por 30\' de Posse Adversária': 2.0,
         'Perdas de bola a cada 100 ações': -2.0
     }
+    
 }
 
 @st.cache_data(show_spinner=False)
@@ -173,7 +201,7 @@ def exibir_ranking_por_perfil(df):
         style = style.background_gradient(subset=[coluna_p], cmap="Blues")
 
         # Métricas cujo menor valor é melhor
-        metricas_invertidas = ["Perdas de bola a cada 100 ações"]
+        metricas_invertidas = ["Perdas de bola a cada 100 ações", "Faltas/90"]
 
         for metrica in metricas_para_gradiente:
             if metrica in df_exibir.columns:

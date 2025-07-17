@@ -69,17 +69,9 @@ def aplicar_filtros_basicos(df):
         elif 'Equipa dentro de um período de tempo seleccionado' in df.columns:
             df.rename(columns={'Equipa dentro de um período de tempo seleccionado': 'Equipa na liga analisada'}, inplace=True)
 
-        coluna_posicao_original = 'Pos.' if 'Pos.' in df.columns else 'Posição'
-        df['Posição'] = (
-            df[coluna_posicao_original]
-            .astype(str)
-            .str.split(',', n=1).str[0]
-            .replace({
-                'RMAF': 'RW', 'LMAF': 'LW', 'LAMF': 'LW', 'RAMF': 'RW',
-                'RDMF': 'DMF', 'LDMF': 'DMF', 'RCMF': 'CMF', 'LCMF': 'CMF',
-                'LWB': 'LB', 'RWB': 'RB', 'LWF': 'LW', 'RWF': 'RW'
-            })
-        )
+        # Não sobrescreve a coluna 'Posição' que já está normalizada
+        if 'Posição' not in df.columns and 'Pos.' in df.columns:
+            df['Posição'] = df['Pos.'].astype(str).str.split(',', n=1).str[0]
 
         with col2:
             posicoes_disponiveis = sorted(df['Posição'].dropna().unique())
@@ -131,7 +123,7 @@ def aplicar_filtros_basicos(df):
             st.markdown(f"**Filtro #{i+1}**")
             col1, col2 = st.columns(2)
             metrica = col1.selectbox(f"Métrica #{i+1}", colunas_numericas, key=f"metrica_{i}")
-            percentil_min = col2.slider(f"Percentil mínimo #{i+1}", 0, 100, 50, key=f"percentil_{i}")
+            percentil_min = col2.slider(f"Percentil mínimo #{i+1}", 0, 100, 0, key=f"percentil_{i}")
             filtros_percentil.append((metrica, percentil_min))
     
         for metrica, limite in filtros_percentil:

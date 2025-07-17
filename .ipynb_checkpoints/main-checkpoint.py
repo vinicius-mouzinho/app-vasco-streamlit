@@ -141,7 +141,8 @@ def gerar_relatorio_dados(
     idade = int(jogador_dados.get("Idade", 0))
     altura = int(jogador_dados.get("Altura", 0))
     naturalidade = jogador_dados.get("Naturalidade", "informação não disponível")
-    pe = jogador_dados.get("Pé", "não informado").lower()
+    pe_raw = jogador_dados.get("Pé", "não informado")
+    pe = str(pe_raw).lower() if pd.notna(pe_raw) else "não informado"
     contrato = jogador_dados.get("Contrato termina")
     contrato = contrato if pd.notna(contrato) else "não informado"
     valor_bruto = jogador_dados.get("Valor de mercado", 0)
@@ -184,6 +185,7 @@ def gerar_relatorio_dados(
             textos=textos,
             imagens=imagens,
             texto_conclusao=texto_conclusao,
+            img_perfil_analitico = img_perfil_analitico,
             resumo_desempenho=resumo_desempenho,
             comparacao_contextual_bs=comparacao_contextual_bs,
             comparacao_vasco_bs=comparacao_vasco_bs,

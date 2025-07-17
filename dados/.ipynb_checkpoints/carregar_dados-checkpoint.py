@@ -5,38 +5,30 @@ import streamlit as st
 import numpy as np
 
 def normalizar_posicoes(df):
-    def limpar_posicao(pos):
+    mapeamento = {
+        'RAMF': 'RW', 'LAMF': 'LW',
+        'RMAF': 'RW', 'LMAF': 'LW',
+        'RDMF': 'DMF', 'LDMF': 'DMF',
+        'RCMF': 'CMF', 'LCMF': 'CMF',
+        'LWB': 'LB', 'RWB': 'RB',
+        'LWF': 'LW', 'RWF': 'RW',
+        'RCB': 'CB', 'LCB': 'CB'
+    }
+
+    def mapear_primeira_posicao(pos):
         if pd.isna(pos):
-            return pos
-        pos = str(pos).strip()
-        if "RAMF" in pos:
-            return "RW"
-        if "LAMF" in pos:
-            return "LW"
-        if "RDMF" in pos:
-            return "DMF"
-        if "LDMF" in pos:
-            return "DMF"
-        if "LCMF" in pos:
-            return "CMF"
-        if "RCMF" in pos:
-            return "CMF"
-        if "LWB" in pos:
-            return "LB"
-        if "RWB" in pos:
-            return "RB"
-        if "LWF" in pos:
-            return "LW"
-        if "RWF" in pos:
-            return "RW"
-        if "RCB" in pos:
-            return "CB"
-        if "LCB" in pos:
-            return "CB"
-        return pos.split(",")[0].strip()  # mantém só a primeira posição
+            return None
+        posicao = str(pos).split(",")[0].strip()  # pega só a primeira posição
+        return mapeamento.get(posicao, posicao)  # aplica o mapeamento ou mantém original
+
     if "Posição" in df.columns:
-        df["Posição"] = df["Posição"].apply(limpar_posicao)
+        df["Posição"] = df["Posição"].apply(mapear_primeira_posicao)
+    elif "Pos." in df.columns:
+        df["Posição"] = df["Pos."].apply(mapear_primeira_posicao)
+
     return df
+
+
 
 def converter_colunas_numericas(df):
     for coluna in df.columns:

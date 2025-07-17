@@ -10,6 +10,7 @@ from reportlab.platypus import (
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT
 from reportlab.lib.units import cm
+from reportlab.platypus import Spacer
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage
@@ -26,6 +27,16 @@ pdfmetrics.registerFont(TTFont("Inter-Bold", "assets/Inter-Bold.ttf"))
 
 # ESTILOS DE PARÁGRAFOS
 styles = getSampleStyleSheet()
+
+TituloSecao = ParagraphStyle(
+    name="TituloSecao",
+    fontName="Inter-Bold",
+    fontSize=16,
+    leading=20,
+    alignment=TA_CENTER,
+    spaceBefore=16,
+    spaceAfter=10
+)
 
 TituloJogador = ParagraphStyle(
     name="TituloJogador",
@@ -81,6 +92,7 @@ def gerar_pdf_jogador(
     radar_path_final=None,
     texto_conclusao=None,
     resumo_desempenho=None,
+    img_perfil_analitico=None,
     comparacao_contextual_bs=None,
     comparacao_vasco_bs=None,
     caminho_saida=None,
@@ -120,12 +132,22 @@ def gerar_pdf_jogador(
 
     if descricao_inicial:
         story.append(Paragraph(descricao_inicial.strip(), TextoJustificado))
-        story.append(Spacer(1, 30))
+        story.append(Spacer(1, 12))
+    
+        if img_perfil_analitico and os.path.exists(img_perfil_analitico):
+            img = RLImage(img_perfil_analitico)
+            img.drawHeight = 15 * cm
+            img.drawWidth = 15 * cm
+            img.hAlign = 'CENTER'
+            story.append(Spacer(1, 16))
+            story.append(img)
+            story.append(Spacer(1, 16))
 
     # Radar
     if radar_path and os.path.exists(radar_path):
         story.append(Image(radar_path, width=15*cm, height=15*cm))
         story.append(Spacer(1, 12))
+
 
     # Cada gráfico tem 3 elementos de texto: texto_1 (Paragraph), Spacer, texto_2 (Paragraph)
     # Então para cada imagem, vamos pegar 3 textos da lista 'textos'
@@ -143,19 +165,33 @@ def gerar_pdf_jogador(
         
         story.append(Spacer(1, 10))
 
-    # Comparações
+    from reportlab.platypus import Table, TableStyle
+    from reportlab.lib import colors
+    
     if comparacao_contextual_bs and os.path.exists(comparacao_contextual_bs):
         story.append(PageBreak())
-        story.append(Paragraph("Comparativo Estatístico - Contexto Geral", Subtitulo))
-        story.append(Spacer(1, 6))
-        story.append(Image(comparacao_contextual_bs, width=17*cm, height=11*cm))
-        story.append(Spacer(1, 8))
-
+        story.append(Paragraph("Comparação Contextual", TituloSecao))
+        img_contextual = Image(comparacao_contextual_bs)
+        img_contextual._restrictSize(40*cm, 18*cm)
+        tabela = Table([[img_contextual]], colWidths=[500])
+        tabela.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
+        ]))
+        story.append(tabela)
+    
     if comparacao_vasco_bs and os.path.exists(comparacao_vasco_bs):
-        story.append(Paragraph("Comparativo Estatístico - Vasco da Gama", Subtitulo))
-        story.append(Spacer(1, 6))
-        story.append(Image(comparacao_vasco_bs, width=17*cm, height=11*cm))
-        story.append(Spacer(1, 8))
+        story.append(PageBreak())
+        story.append(Paragraph("Comparação VS Vasco", TituloSecao))
+        img_vasco = Image(comparacao_vasco_bs)
+        img_vasco._restrictSize(40*cm, 18*cm)
+        tabela2 = Table([[img_vasco]], colWidths=[500])
+        tabela2.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')
+        ]))
+        story.append(tabela2)
+
 
     # Conclusão
     if texto_conclusao:
